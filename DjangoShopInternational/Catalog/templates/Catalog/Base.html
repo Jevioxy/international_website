@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <title>{% block title %}Каталог{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'Main/fonts/icomoon/style.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/jquery-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.theme.default.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/aos.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/style.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+          .card p.price {
+          font-size: 1rem;
+          color: #007bff;
+          margin-bottom: 10px;
+      }
+
+      .card img {
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+      .card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+    /* Стили для кнопок "Создать товар" и "Создать категорию" */
+    .btn-custom {
+      background-color: white;
+      color: #343a40;
+      border: 2px solid #343a40;
+      transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .btn-custom:hover {
+      background-color: #343a40;
+      color: white;
+      border-color: #343a40;
+    }
+
+    /* Стили для кнопок пагинации */
+    .pagination .page-item {
+      margin: 0 5px;
+    }
+
+    .pagination .page-item .page-link {
+      color: #343a40;
+      border-radius: 50px;
+      border: 1px solid #343a40;
+      padding: 10px 20px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .pagination .page-item.active .page-link {
+      background-color: #343a40;
+      color: white;
+      border-color: #343a40;
+    }
+
+    .pagination .page-item .page-link:hover {
+      background-color: #495057;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Центрирование модального окна */
+    .modal-dialog {
+      max-width: 600px;
+      margin: 1.75rem auto;
+    }
+
+    /* Обеспечивает видимость модального окна */
+    .modal-content {
+      border-radius: .3rem;
+    }
+
+    /* Ограничение высоты выпадающего меню и добавление скролла */
+    .dropdown-menu {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 767px) {
+    .card img {
+        height: 150px;
+    }
+}
+
+/* Уплотнение карточек на мобильных устройствах */
+@media (max-width: 576px) {
+    .col-sm-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .card-body {
+        padding: 10px;
+    }
+}
+
+  </style>
+</head>
+
+<body>
+  {% block header %}
+    {% include 'inc/header.html' %}
+  {% endblock %}
+
+  {% block catalog %}{% endblock %}
+
+  {% block content %}{% endblock %}
+  <div class="site-section">
+    <div class="container">
+      <div class="row mb-4">
+        <div class="col-lg-6 mb-3 mb-lg-0">
+          <div class="dropdown">
+            <button type="button" class="btn btn-secondary btn-md dropdown-toggle px-4" id="dropdownMenuReference" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Категории
+            </button>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
+              {% for category in categories %}
+              <a class="dropdown-item" href="{% url 'category' category.pk %}">{{ category.name }}</a>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        {% if user.is_staff %}
+        <div class="col-lg-6 d-flex justify-content-lg-end justify-content-center">
+          <a href="{% url 'createproduct' %}" class="btn btn-custom btn-md mr-2">Создать товар</a>
+          <a href="{% url 'createcategory' %}" class="btn btn-custom btn-md">Создать категорию</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="site-section bg-light">
+        <div class="container">
+          <div class="row">
+            {% if objects %}
+              {% for model in objects %}
+                <div class="col-sm-4 mb-4">
+                  <a href="{% url 'productt' model.pk %}">
+                    <img src="{% if model.photo %}{{ model.photo.url }}{% else %}{% static 'Main/img/lol.png' %}{% endif %}" class="card-img-top" alt="...">
+                  </a>
+                  <div class="card-body">
+                    <h5 class="text-dark text-center">{{ model.name }}</h5>
+                    <p class="price text-center">{{ model.price }}</p>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p>Нет товаров по вашему запросу.</p>
+            {% endif %}
+          </div>
+
+          <!-- Пагинация -->
+          <div class="row mt-5">
+            <div class="col-md-12 text-center">
+              <div class="site-block-27">
+                <ul class="pagination justify-content-center">
+                  {% if objects.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ page_links.first }}">&laquo;&laquo;</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="{{ page_links.previous }}">{{ objects.previous_page_number }}</a>
+                  </li>
+                  {% endif %}
+
+                  <li class="page-item active">
+                    <span class="page-link">{{ objects.number }} <span class="sr-only">(current)</span></span>
+                  </li>
+
+                  {% if objects.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="{{ page_links.next }}">{{ objects.next_page_number }}</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="{{ page_links.last }}">&raquo;&raquo;</a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% block footer %}
+    {% include 'inc/footer.html' %}
+  {% endblock %}
+
+  <!-- Подключаем скрипты в правильном порядке -->
+  <!-- Подключаем jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <!-- Подключаем Popper.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <!-- Подключаем Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    $('.dropdown-toggle').on('click', function(event) {
+      var $el = $(this).next('.dropdown-menu');
+      var isVisible = $el.is(':visible');
+      $('.dropdown-menu').hide();
+      if (!isVisible) {
+        $el.show();
+      }
+    });
+  });
+</script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.querySelector('.js-menu-toggle');
+      const mobileMenu = document.querySelector('.mobile-menu');
+
+      menuToggle.addEventListener('click', function() {
+        mobileMenu.classList.toggle('active');
+      });
+
+      const menuClose = document.querySelector('.search-close');
+      menuClose.addEventListener('click', function() {
+        mobileMenu.classList.remove('active');
+      });
+    });
+  </script>
+  <script src="{% static 'Main/js/jquery-3.3.1.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery-ui.js' %}"></script>
+  <script src="{% static 'Main/js/popper.min.js' %}"></script>
+  <script src="{% static 'Main/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'Main/js/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery.magnific-popup.min.js' %}"></script>
+  <script src="{% static 'Main/js/aos.js' %}"></script>
+  <script src="{% static 'Main/js/main.js' %}"></script>
+  <script src="{% static 'js/order_form.js' %}"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Заказы{% endblock %}
+
+{% block header %}
+    {% include 'inc/header.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="bg-light py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mb-0">
+                    <span class="mx-2 mb-0">/</span>
+                    <strong class="text-black">Заказы</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="site-section">
+        <div class="container">
+            {% if orders %}
+                <div class="row">
+                    {% for order in orders %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Заказ № {{ order.pk }}</h5>
+                                    <p class="card-text">
+                                        <strong>Логин пользователя:</strong>
+                                        {% if order.user %}
+                                            {{ order.user.username }}
+                                        {% else %}
+                                            Анонимный пользователь
+                                        {% endif %}
+                                    </p>
+                                    <p class="card-text">
+                                        <strong>Дата создания:</strong> {{ order.creation_date }}
+                                    </p>
+                                    <a href="{% url 'detailorder' order.pk %}" class="btn btn-primary">Просмотреть детали</a>
+                                    <a href="{% url 'deleteorder' order.pk %}" class="btn btn-danger mt-2">Удалить заказ</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h2 class="h4 text-black mb-4">Нет заказов</h2>
+                    <p class="text-muted mb-4">У вас нет заказов. Создайте новый заказ, если хотите.</p>
+                </div>
+            {% endif %}
+
+            <div class="row mt-5">
+                <div class="col-md-6">
+                    <a href="{% url 'createorder' %}">
+                        <button class="btn btn-primary btn-md btn-block">Создать новый заказ</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

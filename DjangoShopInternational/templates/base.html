@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'Main/fonts/icomoon/style.css' %}">
+
+  <link rel="stylesheet" href="{% static 'Main/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/jquery-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.theme.default.min.css' %}">
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" href="fonts/icomoon/style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/magnific-popup.css">
+  <link rel="stylesheet" href="css/jquery-ui.css">
+  <link rel="stylesheet" href="css/owl.carousel.min.css">
+  <link rel="stylesheet" href="css/owl.theme.default.min.css">
+
+
+  <link rel="stylesheet" href="css/aos.css">
+
+  <link rel="stylesheet" href="css/style.css">
+
+  <link rel="stylesheet" href="{% static 'Main/css/aos.css' %}">
+
+  <link rel="stylesheet" href="{% static 'Main/css/style.css' %}">
+  <style>
+
+    /* Основные стили для хедера и мобильного меню */
+    .site-navbar {
+      background-color: #f8f9fa; /* Цвет фона хедера */
+      padding: 10px 0; /* Отступы по вертикали */
+    }
+
+    .search-wrap {
+      display: none; /* Скрываем поисковую форму по умолчанию */
+    }
+
+    .site-menu-toggle {
+      cursor: pointer; /* Курсор при наведении на кнопку меню */
+    }
+
+    .mobile-menu {
+      display: none; /* Скрываем меню по умолчанию */
+      position: fixed; /* Фиксируем меню на экране */
+      top: 0;
+      left: 0;
+      width: 100%; /* Ширина на весь экран */
+      background-color: #fff; /* Белый фон для мобильного меню */
+      z-index: 1000; /* Чтобы меню было поверх других элементов */
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для улучшения видимости */
+      padding: 20px; /* Внутренние отступы */
+    }
+
+    .mobile-menu.active {
+      display: block; /* Показываем меню при активном классе */
+    }
+
+    .mobile-menu .site-menu {
+      list-style: none; /* Убираем маркеры списка */
+      padding: 0;
+      margin: 0;
+    }
+
+    .mobile-menu .site-menu li {
+      margin: 15px 0; /* Отступы между пунктами меню */
+    }
+
+    .mobile-menu .site-menu li a {
+      text-decoration: none; /* Убираем подчеркивание ссылок */
+      color: #333; /* Цвет текста ссылок */
+      font-size: 18px; /* Размер шрифта */
+    }
+  </style>
+</head>
+
+<body>
+      {% block header %}
+          {%include 'inc/header.html' %}
+      {% endblock %}
+
+      {% block content %}{% endblock %}
+      {% block footer %}
+          {%include 'inc/footer.html' %}
+      {% endblock %}
+  </div>
+
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const menuToggle = document.querySelector('.js-menu-toggle');
+      const mobileMenu = document.querySelector('.mobile-menu');
+
+      menuToggle.addEventListener('click', function() {
+        mobileMenu.classList.toggle('active');
+      });
+
+      const menuClose = document.querySelector('.search-close');
+      menuClose.addEventListener('click', function() {
+        mobileMenu.classList.remove('active');
+      });
+    });
+  </script>
+  <script src="{% static 'Main/js/jquery-3.3.1.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery-ui.js' %}"></script>
+  <script src="{% static 'Main/js/popper.min.js' %}"></script>
+  <script src="{% static 'Main/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'Main/js/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery.magnific-popup.min.js' %}"></script>
+  <script src="{% static 'Main/js/aos.js' %}"></script>
+  <script src="{% static 'Main/js/main.js' %}"></script>
+  <script src="{% static 'js/order_form.js' %}"></script>
+</body>
+
+</html>

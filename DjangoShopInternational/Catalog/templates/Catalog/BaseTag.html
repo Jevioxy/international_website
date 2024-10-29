@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'Main/fonts/icomoon/style.css' %}">
+
+  <link rel="stylesheet" href="{% static 'Main/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/jquery-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.theme.default.min.css' %}">
+
+
+  <link rel="stylesheet" href="{% static 'Main/css/aos.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/style.css' %}">
+
+</head>
+<body>
+  {% block header %}
+    {% include 'Catalog/header.html' %}
+  {% endblock %}
+
+  {% block catalog %}{% endblock %}
+
+  {% block content %}
+
+  <div class="site-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <!-- Кнопка "Категории" -->
+          <button type="button" class="btn btn-secondary btn-md dropdown-toggle px-4" id="dropdownMenuReference" data-toggle="dropdown">Категории</button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
+            {% for category in categories %}
+            <a class="dropdown-item" href="{% url 'category' category.pk %}">{{ category.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <!-- Кнопка "Продолжить покупки" -->
+          <div class="row">
+            <div class="col-md">
+              <a href="{% url 'createproduct' %}">
+                <button class="btn btn-secondary btn-md btn-block">Создать товар</button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="site-section bg-light">
+        <div class="container">
+          <div class="row">
+            {% for model in objects %}
+              {% if model.photo %}
+                <div class="col-sm-4" style="width: 18rem;">
+                  <a href="{% url 'productt' model.pk %}"><img src="{{ model.photo.url }}" class="card-img-top" alt="..."></a>
+                  <div class="card-body">
+                    <h5 class="text-dark text-center">{{ model.name }}</h5>
+                    <p class="price text-center">{{ model.price }}</p>
+                  </div>
+                </div>
+              {% else %}
+                <div class="col-sm-4" style="width: 18rem;">
+                  <a href="{% url 'productt' model.pk %}"><img src="{% static 'Main/img/lol.png' %}" class="card-img-top" alt="..."></a>
+                  <div class="card-body">
+                    <h5 class="text-dark">{{ model.name }}</h5>
+                    <p class="price text-center">{{ model.price }}</p>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+  {% block footer %}
+    {% include 'inc/footer.html' %}
+  {% endblock %}
+
+  <script src="{% static 'Main/js/jquery-3.3.1.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery-ui.js' %}"></script>
+  <script src="{% static 'Main/js/popper.min.js' %}"></script>
+  <script src="{% static 'Main/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'Main/js/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery.magnific-popup.min.js' %}"></script>
+  <script src="{% static 'Main/js/aos.js' %}"></script>
+  <script src="{% static 'Main/js/main.js' %}"></script>
+</body>
+</html>

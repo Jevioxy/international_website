@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+    <div class="text-center">
+        <!-- Картинка -->
+        <img src="{% static 'Main/images/witch.JPG' %}" alt="Аниме персонаж" style="width: 400px; height: 400px;">
+
+        <!-- Краткое сообщение -->
+        <p style="margin-top: 20px; font-size: 24px; color: #333;">
+            Ваш заказ успешно оформлен.<br> Ожидайте, пожалуйста, дальнейших инструкций по электронной почте.
+        </p>
+    </div>
+{% endblock %}

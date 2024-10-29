@@ -1,0 +1,37 @@
+{% extends  'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация{% endblock %}
+{% block content %}
+<section class="signup__area po-rel-z1 pt-100 pb-100">
+                <div class="container">
+                    <div class="container my-5">
+                   <div class="row">
+                      <div class="col-xxl-6 offset-xxl-3 col-xl-6 offset-xl-3 col-lg-8 offset-lg-2">
+                         <div class="sign__wrapper white-bg">
+                            <div class="sign__header mb-35">
+                               <div class="sign__in text-center">
+                                  <p> <span>........</span> Или, <a href="{% url 'login' %}">войдите</a> со своей электронной почтой<span> ........</span> </p>
+                               </div>
+                            </div>
+                            <div class="sign__form">
+                               <form method="post">
+                                  {% csrf_token %}
+                                  {% for f in form %}
+                                    <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+                                    <div class="form-error">{{ f.errors }}</div>
+                                  {% endfor %}
+                                  <button class="btn btn-secondary btn-md btn-block"> <span></span> Зарегестрироваться</button>
+                                  <div class="sign__new text-center mt-20">
+                                     <p>Уже есть аккаунт ? <a href="{% url 'login' %}"> Войти</a></p>
+                                  </div>
+                               </form>
+                            </div>
+                         </div>
+                      </div>
+                        </div>
+                   </div>
+                </div>
+            </section>
+            <!-- signin__area end -->
+{% endblock %}

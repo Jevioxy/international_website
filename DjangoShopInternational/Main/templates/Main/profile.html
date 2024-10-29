@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Профиль пользователя{% endblock %}
+
+{% block header %}
+    {% include 'inc/header.html' %}
+{% endblock %}
+
+{% block content %}
+<style>
+    /* Стили для кнопок "Изменить профиль", "Удалить профиль" и "Выйти" */
+    .btn-custom {
+        background-color: white;
+        color: #343a40;
+        border: 2px solid #343a40;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    .btn-custom:hover {
+        background-color: #343a40;
+        color: white;
+        border-color: #343a40;
+    }
+
+    /* Дополнительные стили для профиля */
+    .profile-picture {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .profile-info {
+        margin-top: 20px;
+    }
+
+    .profile-info p {
+        font-size: 18px;
+        color: #343a40;
+    }
+
+    .btn-profile {
+        margin-right: 10px;
+    }
+
+    .missing-info {
+        color: #d9534f; /* Цвет для уведомлений о пустых полях */
+        font-weight: bold;
+    }
+
+    /* Контейнер для кнопок, выравнивание в одну линию */
+    .profile-buttons {
+        display: flex;
+        align-items: center; /* Вертикальное выравнивание кнопок */
+    }
+
+    /* Кнопки на мобильных устройствах (ширина 100% и отступы между ними) */
+    @media (max-width: 768px) {
+        .profile-buttons {
+            display: block; /* Вертикальное расположение кнопок */
+        }
+        .btn-profile {
+            width: 100%;
+            margin-bottom: 10px;
+            margin-right: 0;
+        }
+        .profile-info .btn-custom {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+</style>
+    <div class="bg-light py-3">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 mb-0">
+            <span class="mx-2 mb-0">/</span>
+            <strong class="text-black">Профиль пользователя</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+<div class="container my-5">
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <!-- Пользовательская фотография -->
+                <div class="mb-4">
+                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'Main/img/lol.png' %}{% endif %}"
+                         alt="Profile Picture"
+                         class="profile-picture">
+                </div>
+            </div>
+            <div class="col-md-8 profile-info">
+                <!-- Информация о пользователе -->
+                <h2 class="text-dark">{{ user.username }}</h2>
+                <p class="text-dark"><strong>Имя:</strong> {% if user.first_name %}{{ user.first_name }}{% else %}<span class="missing-info">Дополните информацию</span>{% endif %}</p>
+                <p class="text-dark"><strong>Фамилия:</strong> {% if user.last_name %}{{ user.last_name }}{% else %}<span class="missing-info">Дополните информацию</span>{% endif %}</p>
+                <p class="text-dark"><strong>Email:</strong> {{ user.email }}</p>
+                <p class="text-dark"><strong>Дата регистрации:</strong> {{ user.date_joined|date:"d M Y" }}</p>
+
+                <!-- Контейнер для кнопок -->
+                <div class="mt-4 profile-buttons">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-custom btn-md btn-profile">Изменить профиль</a>
+                    <a href="{% url 'delete_profile' %}" class="btn btn-custom btn-md btn-profile"
+   onclick="return confirm('Вы уверены, что хотите удалить свой профиль?');">Удалить профиль</a>
+                    <a href="{% url 'logout' %}" class="btn btn-custom btn-md">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

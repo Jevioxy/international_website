@@ -1,0 +1,35 @@
+{% extends 'Catalog/Base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if category %}
+        {{ category.name }}
+    {% else %}
+        Каталог
+    {% endif %}
+{% endblock %}
+
+{% block catalog %}
+    <div class="bg-light py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mb-0">
+                    <a href="{% url 'index' %}">Главная</a>
+                    <span class="mx-2 mb-0">/</span>
+                    <a href="{% url 'catalog' %}">Каталог</a>
+                    <span class="mx-2 mb-0">/</span>
+                    <a href="{% url 'catalog' %}">Все товары</a>
+                    {% if category %}
+                        <span class="mx-2 mb-0">/</span>
+                        <strong class="text-black">{{ category.name }}</strong>
+                    {% else %}
+
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+{% endblock %}

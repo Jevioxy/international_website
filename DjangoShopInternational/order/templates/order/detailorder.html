@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Просмотр заказа {{ order.pk }}{% endblock %}
+
+{% block header %}
+    {% include 'order/header.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="bg-light py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mb-0">
+                    <a href="{% url 'index' %}">Главная</a>
+                    <span class="mx-2 mb-0">/</span>
+                    <a href="{% url 'order' %}">Заказ</a>
+                    <span class="mx-2 mb-0">/</span>
+                    <strong class="text-black">Просмотр заказа</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="site-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h4 class="card-title">Детали заказа № {{ order.pk }}</h4>
+                        </div>
+                        <div class="card-body text-black">
+                            <div class="mb-3">
+                                <strong>Пользователь:</strong>
+                                <p>{{ order.user.username }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email пользователя:</strong>
+                                <p>{{ order.email }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Позиции заказа:</strong>
+                                <ul class="list-unstyled">
+                                    {% for item in order.orderitem_set.all %}
+                                        <li>{{ item.product.name }} - {{ item.quantity }} шт</li>
+                                    {% empty %}
+                                        <li>Нет позиций заказа</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Статус заказа:</strong>
+                                <p>{{ order.get_status_display }}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between flex-column flex-md-row">
+                                <a href="{% url 'updateorder' order.pk %}" class="btn btn-primary btn-sm mb-2 mb-md-0">Изменить заказ</a>
+                                <a href="{% url 'deleteorder' order.pk %}" class="btn btn-danger btn-sm">Удалить заказ</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

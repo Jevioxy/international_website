@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Footer Example</title>
+
+  <link rel="stylesheet" href="path/to/your/custom/styles.css">
+  <style>
+    /* Стили для футера */
+    .site-footer {
+      background-color: #000; /* Черный фон */
+      color: #fff; /* Белый текст */
+      padding: 2rem 0;
+      width: 100%;
+    }
+
+    .site-footer a {
+      color: #fff; /* Белый цвет ссылок */
+      text-decoration: none;
+    }
+
+    .site-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Белый цвет для заголовков и текста футера */
+    .site-footer .footer-heading {
+      color: #fff; /* Белый цвет заголовков */
+    }
+
+    .site-footer .block-7 p,
+    .site-footer .block-5 p,
+    .site-footer .block-5 ul li {
+      color: #fff; /* Белый цвет текста */
+    }
+
+    .site-footer .block-5 ul {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .site-footer .block-5 ul li {
+      margin-bottom: 0.5rem;
+    }
+
+    .site-footer p {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+
+<body>
+<!-- Основное содержание сайта -->
+{% block content %}
+{% endblock %}
+
+<!-- Футер -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="row">
+      <!-- Логотип -->
+      <div class="col-12 text-center mb-4">
+        <div class="logo">
+          <div class="site-logo">
+            <a href="{% url 'index' %}" class="js-logo-clone">Kyper</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <!-- О нас -->
+      <div class="col-md-6 col-lg-3 mb-4 mb-lg-0">
+        <div class="block-7">
+          <h3 class="footer-heading mb-4">О нас</h3>
+          <p>Международный магазин эксклюзивных товаров.</p>
+        </div>
+      </div>
+
+      <!-- Интересные факты -->
+      <div class="col-lg-3 mx-auto mb-5 mb-lg-0">
+        <h3 class="footer-heading mb-4">Интересные факты</h3>
+        <p>Широкий ассортимент уникальных и качественных товаров.</p>
+      </div>
+
+      <!-- Контактная информация -->
+      <div class="col-md-6 col-lg-3">
+        <div class="block-5 mb-5">
+          <h3 class="footer-heading mb-4">Контакты</h3>
+          <ul class="list-unstyled">
+            <li class="address">Москва, Россия</li>
+            <li class="phone"><a href="tel://89998887766">+7 (999) 888 77 66</a></li>
+            <li class="email">info@kyper.com</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row pt-5 mt-5 text-center">
+      <div class="col-md-12">
+        <p>
+          Copyright &copy;
+          <script>document.write(new Date().getFullYear());</script> Kyper
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kyper - Ваш Путь к Миру{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="site-blocks-cover" style="background-image: url({% static 'Main/images/background.png' %});">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-7 mx-auto order-lg-2 align-self-center">
+                <div class="site-block-cover-content text-center">
+                    <h2 class="sub-title" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);">Эксклюзивные Находки, Глобальные Сокровища, Качественные Товары</h2>
+                    <h1 style="text-shadow: 3px 3px 12px rgba(0, 0, 0, 0.8);">Ваш Путь к Миру</h1>
+                    <p>
+                        <a href="{% url 'catalog' %}" class="btn btn-primary px-5 py-3">Оформить Заказ</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Products Section -->
+<div class="site-section bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="title-section text-center col-12">
+                <h2 class="text-uppercase">Наша Продукция</h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 block-3 products-wrap">
+                <div class="nonloop-block-3 owl-carousel">
+                    {% for model in objects %}
+                    <div class="text-center item mb-4">
+                        {% if model.photo %}
+                        <a href="{% url 'productt' model.pk %}"><img src="{{ model.photo.url }}" alt="Image"></a>
+                        <h3 class="text-dark"><a href="{% url 'productt' model.pk %}">{{ model.name }}</a></h3>
+                        <p class="price">{{ model.price }}</p>
+                        {% else %}
+                        <a href="{% url 'productt' model.pk %}"><img src="{% static 'Main/img/lol.png' %}" alt="Image"></a>
+                        <h3 class="text-dark"><a href="{% url 'productt' model.pk %}">{{ model.name }}</a></h3>
+                        <p class="price">{{ model.price }}</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

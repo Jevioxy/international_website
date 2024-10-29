@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Rubik:400,700|Crimson+Text:400,400i" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'Main/fonts/icomoon/style.css' %}">
+
+  <link rel="stylesheet" href="{% static 'Main/css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/jquery-ui.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.carousel.min.css' %}">
+  <link rel="stylesheet" href="{% static 'Main/css/owl.theme.default.min.css' %}">
+
+
+  <link rel="stylesheet" href="{% static 'Main/css/aos.css' %}">
+
+  <link rel="stylesheet" href="{% static 'Main/css/style.css' %}">
+
+</head>
+
+<body>
+      {% block header %}
+          {%include 'Api/header.html' %}
+      {% endblock %}
+
+      {% block api %}
+      <div class="bg-light py-3">
+      <div class="container">
+        <div class="row">
+             <div class="col-md-12 mb-0"><a href="{% url 'index' %}">Главная</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Api</strong></div>
+        </div>
+      </div>
+    </div>
+    {% endblock %}
+
+
+
+    <div class="site-section">
+      <div class="container">
+
+<div class="row">
+    <div class="col-lg-6">
+        <!-- Кнопка "Категории" -->
+        <button type="button" class="btn btn-secondary btn-md dropdown-toggle px-4" id="dropdownMenuReference"
+          data-toggle="dropdown">Меню</button>
+        <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
+          <a class="dropdown-item" href="{% url 'api' %}">Api</a>
+          <a class="dropdown-item" href="{% url 'apicreate' %}">Api - создать</a>
+          <a class="dropdown-item" href="{% url 'apiedit' %}">Редактирование товара</a>
+          <a class="dropdown-item" href="{% url 'apidelete' %}">Удаление товара</a>
+          <a class="dropdown-item" href="{% url 'apiselectmany' %}">Много товаров</a>
+          <a class="dropdown-item" href="{% url 'apiselectone' %}">Один товар</a>
+        </div>
+    </div>
+    {% block content %}
+    {% endblock %}
+      {% block footer %}
+          {%include 'inc/footer.html' %}
+      {% endblock %}
+  </div>
+
+    </div>
+  </div>
+
+  <script src="{% static 'Main/js/jquery-3.3.1.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery-ui.js' %}"></script>
+  <script src="{% static 'Main/js/popper.min.js' %}"></script>
+  <script src="{% static 'Main/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'Main/js/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'Main/js/jquery.magnific-popup.min.js' %}"></script>
+  <script src="{% static 'Main/js/aos.js' %}"></script>
+  <script src="{% static 'Main/js/main.js' %}"></script>
+
+</body>
+
+</html>

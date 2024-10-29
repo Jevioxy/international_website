@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block header %}
+    {% include 'inc/header.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="bg-light py-3">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 mb-0">
+                    <span class="mx-2 mb-0">/</span>
+                    <strong class="text-black">Корзина</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="site-section">
+        <div class="container">
+            {% if basket %}
+                <div class="row">
+                    {% for item in basket %}
+                        {% with prod_obj=item.product %}
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="{% if prod_obj.photo and prod_obj.photo.url %}{{ prod_obj.photo.url }}{% else %}{% static 'Main/img/lol.png' %}{% endif %}" class="card-img-top" alt="Image">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a class="text-black" href="{% url 'productt' prod_obj.pk %}">
+                                            {{ prod_obj.name }}
+                                        </a>
+                                    </h5>
+                                    <p class="card-text">Цена: {{ item.price_prod }}</p>
+                                    <p class="card-text">Количество: {{ item.count_prod }}</p>
+                                    <p class="card-text">Всего: {{ item.total_price }}</p>
+                                    <a href="{% url 'remove_basket_prod' prod_obj.pk %}" class="btn btn-primary">Удалить</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <a href="{% url 'clear_basket_prod' %}" class="btn btn-primary btn-md btn-block">Очистить корзину</a>
+                        <a href="{% url 'catalog' %}" class="btn btn-outline-primary btn-md btn-block">Продолжить покупки</a>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="border p-3">
+                            <h4 class="text-uppercase">Итоговая сумма</h4>
+                            <div class="row mb-3">
+                                <div class="col-6">Промежуточный итог</div>
+                                <div class="col-6 text-right">{{ basket.get_total_price }}</div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">Итого</div>
+                                <div class="col-6 text-right">{{ basket.get_total_price }}</div>
+                            </div>
+                            <form action="{% url 'create_order' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-primary btn-md btn-block">Оформить заказ</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h2 class="h4 text-black mb-4">Ваша корзина пуста</h2>
+                    <p class="text-muted mb-4">Вы можете вернуться в каталог и добавить товары в корзину.</p>
+                    <a href="{% url 'catalog' %}" class="btn btn-primary btn-lg">Вернуться в каталог</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

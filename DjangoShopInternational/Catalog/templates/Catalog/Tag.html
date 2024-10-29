@@ -1,0 +1,98 @@
+{% extends 'Catalog/BaseTag.html' %}
+{% load static %}
+
+{% block title %}TAGS{% endblock %}
+
+{% block catalog %}
+<div class="bg-light py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mb-0"><a href="{% url 'index' %}">Главная</a> <span class="mx-2 mb-0">/</span> <a href="{% url 'catalog' %}">Каталог</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">#{{ tag.name }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+  <div class="site-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <!-- Кнопка "Категории" -->
+          <button type="button" class="btn btn-secondary btn-md dropdown-toggle px-4" id="dropdownMenuReference" data-toggle="dropdown">Теги</button>
+          <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
+            {% for tag in tags.all %}
+              <a class="dropdown-item" href="{% url 'tag' tag.pk %}">{{ tag.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="row">
+            <div class="col-md">
+              <a href="{% url 'CreateTag' %}">
+                <button class="btn btn-secondary btn-md btn-block">Создать тег</button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="site-section bg-light">
+        <div class="container">
+          <div class="row">
+            {% for model in objects %}
+              {% if model.photo %}
+                <div class="col-sm-4" style="width: 18rem;">
+                  <a href="{% url 'productt' model.pk %}"><img src="{{ model.photo.url }}" class="card-img-top" alt="..."></a>
+                  <div class="card-body">
+                    <h5 class="text-dark text-center">{{ model.name }}</h5>
+                    <p class="price text-center">{{ model.price }}</p>
+                  </div>
+                </div>
+              {% else %}
+                <div class="col-sm-4" style="width: 18rem;">
+                  <a href="{% url 'productt' model.pk %}"><img src="{% static 'Main/img/lol.png' %}" class="card-img-top" alt="..."></a>
+                  <div class="card-body">
+                    <h5 class="text-dark">{{ model.name }}</h5>
+                    <p class="price text-center">{{ model.price }}</p>
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Кнопка "пагинации страниц" -->
+        <div class="row mt-5">
+          <div class="col-md-12 text-center">
+            <div class="site-block-27">
+              <ul class="pagination justify-content-center">
+                {% if objects.has_previous %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1">&lt;&lt;</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ objects.previous_page_number }}">{{ objects.previous_page_number }}</a>
+                  </li>
+                {% endif %}
+
+                <li class="page-item {% if not objects.has_previous and not objects.has_next %}active{% endif %}">
+                  <span class="page-link">{{ objects.number }} <span class="sr-only">(current)</span></span>
+                </li>
+
+                {% if objects.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ objects.next_page_number }}">{{ objects.next_page_number }}</a>
+                  </li>
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ objects.paginator.num_pages }}">&gt;&gt;</a>
+                  </li>
+                {% endif %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

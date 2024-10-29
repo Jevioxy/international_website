@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Подтверждение удаления{% endblock %}
+
+{% block header %}
+    {% include 'inc/header.html' %}
+{% endblock %}
+
+{% block content %}
+    <div class="bg-light py-3">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12 mb-0">
+            <span class="mx-2 mb-0">/</span>
+            <strong class="text-black">Удаление профиля</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="site-section">
+<div class="container my-5">
+    <h2 class="text-center">Вы уверены, что хотите удалить свой профиль?</h2>
+    <div class="text-center mt-4">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+        </div>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ Model_and_tochka.name }}{% endblock %}
+
+{% block content %}
+<div class="bg-light py-3">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12 mb-0">
+        <a href="{% url 'index' %}">Главная</a>
+        <span class="mx-2 mb-0">/</span>
+        <a href="{% url 'catalog' %}">Каталог</a>
+        <span class="mx-2 mb-0">/</span>
+        <strong class="text-black">Просмотр товара</strong>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="site-section">
+  <div class="container">
+    <div class="row">
+      <!-- Изображение товара -->
+      <div class="col-lg-6 mb-4">
+        <div class="border text-center bg-white p-3">
+          {% if Model_and_tochka.photo %}
+          <img src="{{ Model_and_tochka.photo.url }}" alt="Image" class="img-fluid">
+          {% else %}
+          <img src="{% static 'Main/img/lol.png' %}" alt="Image" class="img-fluid">
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Информация о товаре и кнопки -->
+      <div class="col-lg-6">
+        <h2 class="text-black">{{ Model_and_tochka.name }}</h2>
+
+        <!-- Новый элемент - Страна производителя -->
+        {% if Model_and_tochka.country_of_origin %}
+        <p class="text-muted">Страна производителя: <strong>{{ Model_and_tochka.country_of_origin }}</strong></p>
+        {% endif %}
+
+       <!-- Новый элемент - Категория товара -->
+        {% if Model_and_tochka.category %}
+        <p class="text-muted">Категория:
+          <a href="{% url 'category' Model_and_tochka.category.pk %}" class="text-primary">
+            <strong>{{ Model_and_tochka.category.name }}</strong>
+          </a>
+        </p>
+        {% endif %}
+
+        <p><strong class="text-primary h4">{{ Model_and_tochka.price }} ₽</strong></p>
+
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_basket_prod' Model_and_tochka.pk %}">
+          {% csrf_token %}
+          <div class="mb-4">
+            <div class="input-group mb-3" style="max-width: 200px;">
+              <div class="input-group-prepend">
+                <button class="btn btn-outline-primary js-btn-minus" type="button">−</button>
+              </div>
+              <input type="number" class="form-control text-center" value="1" name="count_prod" min="1" max="25">
+              <div class="input-group-append">
+                <button class="btn btn-outline-primary js-btn-plus" type="button">+</button>
+              </div>
+            </div>
+          </div>
+          <input type="submit" class="btn btn-sm height-auto px-4 py-3 btn-primary mb-3" value="В корзину">
+        </form>
+        {% endif %}
+
+        {% if user.is_staff %}
+        <a href="{% url 'update' Model_and_tochka.pk %}" class="btn btn-sm height-auto px-4 py-3 btn-secondary mb-3">Изменить товар</a>
+        <a href="{% url 'delete' Model_and_tochka.pk %}" class="btn btn-sm height-auto px-4 py-3 btn-danger mb-3">Удалить товар</a>
+        {% endif %}
+
+        <!-- Информация о товаре -->
+        <div class="mt-5">
+          <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Информация о товаре</a>
+            </li>
+          </ul>
+          <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+              <table class="table table-striped custom-table">
+                <thead>
+                  <tr>
+                    <th>Подробное описание</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ Model_and_tochka.description }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div> <!-- .col-lg-6 -->
+    </div> <!-- .row -->
+  </div> <!-- .container -->
+</div> <!-- .site-section -->
+{% endblock %}
