@@ -4,7 +4,7 @@
 {% block title %}Профиль пользователя{% endblock %}
 
 {% block header %}
-    {% include 'inc/header.html' %}
+{% include 'inc/header.html' %}
 {% endblock %}
 
 {% block content %}
@@ -72,16 +72,17 @@
         }
     }
 </style>
-    <div class="bg-light py-3">
-      <div class="container">
+
+<div class="bg-light py-3">
+    <div class="container">
         <div class="row">
-          <div class="col-md-12 mb-0">
-            <span class="mx-2 mb-0">/</span>
-            <strong class="text-black">Профиль пользователя</strong>
-          </div>
+            <div class="col-md-12 mb-0">
+                <span class="mx-2 mb-0">/</span>
+                <strong class="text-black">Профиль пользователя</strong>
+            </div>
         </div>
-      </div>
     </div>
+</div>
 
 <div class="container my-5">
     <div class="container mt-5">
@@ -105,8 +106,19 @@
                 <!-- Контейнер для кнопок -->
                 <div class="mt-4 profile-buttons">
                     <a href="{% url 'edit_profile' %}" class="btn btn-custom btn-md btn-profile">Изменить профиль</a>
+
+                    <!-- Кнопка "Склад" для сотрудников -->
+                    {% if user.is_staff %}
+                    <a href="{% url 'warehouse' %}" class="btn btn-custom btn-md btn-profile">Склад</a>
+                    {% endif %}
+
+                    <!-- Кнопка "Административная панель" для администраторов -->
+                    {% if user.is_superuser %}
+                    <a href="{% url 'admin_panel' %}" class="btn btn-custom btn-md btn-profile">Административная панель</a>
+                    {% endif %}
+
                     <a href="{% url 'delete_profile' %}" class="btn btn-custom btn-md btn-profile"
-   onclick="return confirm('Вы уверены, что хотите удалить свой профиль?');">Удалить профиль</a>
+                       onclick="return confirm('Вы уверены, что хотите удалить свой профиль?');">Удалить профиль</a>
                     <a href="{% url 'logout' %}" class="btn btn-custom btn-md">Выйти</a>
                 </div>
             </div>

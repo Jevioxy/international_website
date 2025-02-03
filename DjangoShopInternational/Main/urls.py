@@ -4,6 +4,7 @@ from django.conf.urls.static import static
 from django.conf import settings
 from .import views
 from .views import order_finish, create_order, ProfileDeletedView
+from .views import *
 
 urlpatterns = [
     path('', views.index.as_view(), name='index'),
@@ -68,4 +69,31 @@ urlpatterns = [
     path('api/tag/<int:pk>/', views.ApiTagDetail.as_view(), name='api_tag_detail'),
     path('api/tag/update/<int:pk>/', views.ApiTagUpdate.as_view(), name='api_tag_update'),
     path('api/tag/delete/<int:pk>/', views.ApiModel_and_tochkaDelete.as_view(), name='api_tag_delete'),
+    # новости
+    path('news/', NewsListView.as_view(), name='news_list'),
+    path('news/<int:pk>/', NewsDetailView.as_view(), name='news_detail'),
+    # склад
+    path('warehouse/', WarehouseListView.as_view(), name='warehouse'),
+    path('warehouse/edit/<int:pk>/', EditStockView.as_view(), name='edit_stock'),
+    path('warehouse/delete/<int:pk>/', views.delete_product, name='delete_product'),  # URL для удаления товара
+    # админ панель
+    path('adminpanel/', views.admin_panel, name='admin_panel'),
+    # админ панель заказов
+    path('adminpanel/orders/', AdminPanelOrderListView.as_view(), name='adminpanel_order_list'),
+    path('adminpanel/orders/create/', AdminPanelOrderCreateView.as_view(), name='adminpanel_order_create'),
+    # админ панель история действий пользователя
+    path('action-history/', action_history, name='action_history'),
+    path('action-history/delete/<int:pk>/', views.delete_action_history, name='delete_action_history'),
+    path('action-history/clear/', views.clear_action_history, name='clear_action_history'),
+    # админ панель юзеры
+    path('adminpanel/users/', views.UserListView.as_view(), name='user_list'),
+    path('adminpanel/users/create/', views.UserCreateView.as_view(), name='user_create'),
+    path('adminpanel/users/<int:pk>/edit/', views.UserUpdateView.as_view(), name='user_edit'),
+    path('adminpanel/users/<int:pk>/delete/', views.user_delete, name='user_delete'),
+    # админ панель копия бд и
+    path('adminpanel/backup/', views.backup_db, name='backup_db'),
+    path('adminpanel/restore/', views.restore_db, name='restore_db'),
+
+
+
 ]

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Склад{% endblock %}
+
+{% block content %}
+<div class="bg-light py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 mb-0">
+                <a href="{% url 'index' %}">Главная</a> <span class="mx-2 mb-0">/</span>
+                <strong class="text-black">Склад</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Заголовок страницы -->
+    <h2 class="text-center mb-4" style="color: #343a40; font-weight: bold;">Склад товаров</h2>
+
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'createproduct' %}" class="btn btn-outline-dark">Добавить товар</a>
+    </div>
+
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 text-center border-dark">
+                <!-- Фото товара -->
+                <div class="card-header position-relative p-0">
+                    {% if product.photo %}
+                    <img src="{{ product.photo.url }}" alt="Фото товара" class="card-img-top img-fluid" style="height: 200px; object-fit: contain; width: 100%;">
+                    {% else %}
+                    <img src="{% static 'Main/img/lol.png' %}" alt="Placeholder" class="card-img-top img-fluid" style="height: 200px; object-fit: contain; width: 100%;">
+                    {% endif %}
+                </div>
+                <!-- Основное содержимое карточки -->
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">Количество на складе: {{ product.stock_quantity }}</p>
+                    <p class="card-text">Цена: {{ product.price }} ₽</p>
+                </div>
+                <!-- Кнопки действия вертикально -->
+                <div class="card-footer d-flex flex-column align-items-center">
+                    <a href="{% url 'update' product.pk %}" class="btn btn-outline-dark btn-sm mb-2">Изменить товар</a>
+                    <a href="{% url 'edit_stock' product.pk %}" class="btn btn-outline-info btn-sm mb-2">Изменить количество</a>
+                    <a href="{% url 'delete_product' product.pk %}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Вы уверены, что хотите удалить этот товар?');">Удалить товар</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .btn-outline-dark, .btn-outline-info, .btn-outline-danger {
+        width: 100%;
+    }
+
+    .btn-outline-dark {
+        border: 1px solid #343a40;
+        color: #343a40;
+    }
+
+    .btn-outline-dark:hover {
+        background-color: #343a40;
+        color: white;
+    }
+
+    .btn-outline-info {
+        border: 1px solid #17a2b8;
+        color: #17a2b8;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-outline-danger {
+        border: 1px solid #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}

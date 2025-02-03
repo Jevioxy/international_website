@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Административная панель{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Левая колонка с меню -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="{% url 'adminpanel_order_list' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Заказы
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Категории
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Отзывы
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Теги
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Товары
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="{% url 'user_list' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Пользователи
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    Группы
+                    <span class="text-primary">+</span>
+                </a>
+                <a href="{% url 'action_history' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    История действий
+                    <span class="text-primary">+</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Правая колонка с основным содержанием -->
+        <div class="col-md-9">
+            <h1 class="display-4 mb-4 text-dark text-left">Административная панель</h1>
+            <p class="lead text-dark text-left">
+                Добро пожаловать в административную панель! Здесь вы можете управлять различными аспектами сайта, такими как заказы, категории товаров, отзывы, теги и многое другое.
+            </p>
+            <p class="text-dark text-left">
+                Используйте меню слева для перехода к нужному разделу. Каждая категория позволяет выполнять основные операции, такие как добавление, редактирование и удаление записей. Административная панель создана для упрощения управления контентом и эффективного обслуживания пользователей.
+            </p>
+
+            <!-- Блок для кнопок резервного копирования и восстановления -->
+            <div class="d-flex justify-content-center align-items-center mt-5">
+                <!-- Кнопка для создания и скачивания резервной копии -->
+                <a href="{% url 'backup_db' %}" class="btn btn-outline-dark mx-2">
+                    Скачать резервную копию
+                </a>
+
+                <!-- Форма для восстановления из резервной копии -->
+                <form id="restoreForm" enctype="multipart/form-data" style="display: flex; align-items: center;">
+                    {% csrf_token %}
+                    <label for="backupFile" class="btn btn-outline-dark mb-0 mx-2">
+                        Выбрать файл
+                        <input type="file" name="backup_file" class="form-control-file d-none" id="backupFile">
+                    </label>
+                    <button type="button" id="restoreBtn" class="btn btn-outline-secondary mx-2">Восстановить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('restoreBtn').addEventListener('click', function() {
+        const form = document.getElementById('restoreForm');
+        const formData = new FormData(form);
+        fetch("{% url 'restore_db' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert("Произошла ошибка при восстановлении из резервной копии: " + data.message);
+                }
+            })
+            .catch(error => alert("Произошла ошибка при восстановлении из резервной копии."));
+    });
+</script>
+{% endblock %}

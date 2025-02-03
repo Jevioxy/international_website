@@ -31,7 +31,8 @@ INSTALLED_APPS = [
     'Catalog',
     'Contact',
     'Login',
-    'Main',
+    'Main.apps.MainConfig',
+    'AdminPanel',
     'order'
 ]
 
@@ -43,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'Main.middleware.UserLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'MyShop.urls'

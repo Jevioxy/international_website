@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Редактировать пользователя{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h1 class="mb-4 text-center text-dark">Редактировать пользователя</h1>
+  <form method="post" class="needs-validation" novalidate>
+    {% csrf_token %}
+
+    <div class="mb-3">
+      <label for="{{ form.username.id_for_label }}" class="form-label text-dark">Имя пользователя:</label>
+      <input type="text" class="form-control" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" value="{{ form.username.value }}" required>
+      {% if form.username.help_text %}
+      <small class="form-text text-muted">{{ form.username.help_text }}</small>
+      {% endif %}
+    </div>
+
+    <div class="mb-3">
+      <label for="{{ form.email.id_for_label }}" class="form-label text-dark">Адрес электронной почты:</label>
+      <input type="email" class="form-control" name="{{ form.email.name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value }}" required>
+    </div>
+
+    <div class="form-check mb-3">
+      <input type="checkbox" class="form-check-input" name="{{ form.is_staff.name }}" id="{{ form.is_staff.id_for_label }}" {% if form.is_staff.value %}checked{% endif %}>
+      <label for="{{ form.is_staff.id_for_label }}" class="form-check-label text-dark">
+        Статус персонала
+      </label>
+      {% if form.is_staff.help_text %}
+      <small class="form-text text-muted">{{ form.is_staff.help_text }}</small>
+      {% endif %}
+    </div>
+
+    <div class="form-check mb-3">
+      <input type="checkbox" class="form-check-input" name="{{ form.is_active.name }}" id="{{ form.is_active.id_for_label }}" {% if form.is_active.value %}checked{% endif %}>
+      <label for="{{ form.is_active.id_for_label }}" class="form-check-label text-dark">
+        Активный
+      </label>
+      {% if form.is_active.help_text %}
+      <small class="form-text text-muted">{{ form.is_active.help_text }}</small>
+      {% endif %}
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+      <button type="submit" class="btn btn-success me-2">Сохранить</button>
+      <a href="{% url 'user_list' %}" class="btn btn-secondary">Отмена</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  .form-text {
+    font-size: 0.875em;
+    color: #6c757d;
+  }
+  .form-label {
+    font-weight: 500;
+  }
+  .form-check-label {
+    margin-left: 5px;
+  }
+</style>
+{% endblock %}

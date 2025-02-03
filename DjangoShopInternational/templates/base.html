@@ -33,10 +33,9 @@
 
   <link rel="stylesheet" href="{% static 'Main/css/style.css' %}">
   <style>
-
     /* Основные стили для хедера и мобильного меню */
     .site-navbar {
-      background-color: #f8f9fa; /* Цвет фона хедера */
+      background-color: #000000; /* Цвет фона хедера */
       padding: 10px 0; /* Отступы по вертикали */
     }
 
@@ -54,7 +53,7 @@
       top: 0;
       left: 0;
       width: 100%; /* Ширина на весь экран */
-      background-color: #fff; /* Белый фон для мобильного меню */
+      background-color: #ffffff; /* Белый фон для мобильного меню */
       z-index: 1000; /* Чтобы меню было поверх других элементов */
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень для улучшения видимости */
       padding: 20px; /* Внутренние отступы */
@@ -62,6 +61,21 @@
 
     .mobile-menu.active {
       display: block; /* Показываем меню при активном классе */
+    }
+    /* Стили для мобильного меню */
+    .site-mobile-menu {
+      background-color: #000000; /* Черный фон для мобильного меню */
+      color: #ffffff; /* Белый цвет текста для видимости */
+    }
+
+    .site-mobile-menu .site-menu li a {
+      color: #ffffff !important; /* Белый цвет ссылок для контраста на черном фоне */
+      text-decoration: none; /* Убираем подчеркивание ссылок */
+      font-size: 18px; /* Размер шрифта */
+    }
+
+    .site-mobile-menu .site-menu li a:hover {
+      color: #bbbbbb !important; /* Серый цвет при наведении для эффекта */
     }
 
     .mobile-menu .site-menu {
@@ -76,10 +90,11 @@
 
     .mobile-menu .site-menu li a {
       text-decoration: none; /* Убираем подчеркивание ссылок */
-      color: #333; /* Цвет текста ссылок */
+      color: #000000 !important; /* Темный цвет текста для видимости на белом фоне */
       font-size: 18px; /* Размер шрифта */
     }
   </style>
+
 </head>
 
 <body>

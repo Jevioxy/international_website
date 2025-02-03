@@ -1,0 +1,26 @@
+<!-- templates/News/news_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}{{ news.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 mb-3 text-dark">{{ news.title }}</h1>
+            <p class="text-muted">Опубликовано: {{ news.publication_date }}</p>
+
+            {% if news.photo %}
+            <div class="text-center mb-4">
+                <img src="{{ news.photo.url }}" class="img-fluid rounded" alt="Фото новости" style="max-height: 400px; object-fit: cover;">
+            </div>
+            {% endif %}
+
+            <p class="lead text-dark">{{ news.description }}</p>
+
+            <a href="{% url 'news_list' %}" class="btn btn-secondary mt-3">Назад к новостям</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

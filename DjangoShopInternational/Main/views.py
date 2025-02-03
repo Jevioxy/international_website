@@ -1,4 +1,12 @@
 from django.contrib.auth import logout
+import subprocess
+import os
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+import subprocess
+import os
+import tempfile
+from django.http import JsonResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -6,6 +14,9 @@ from django.db import transaction
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from .basket import Basket
+from django.views.generic import ListView
+from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
+from .models import Order
 from .models import *
 from django.views.generic import DetailView, UpdateView, DeleteView, CreateView, ListView, TemplateView
 from .forms import Model_and_tochkaForm, CategoryForm, TagForm, BasketAddProductForm, RegisterUserForm, \
@@ -14,6 +25,15 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse, reverse_lazy
 from django.views.decorators.http import require_POST
 from rest_framework import generics
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
+from django.shortcuts import redirect
+from django.contrib import messages
+from .models import ActionHistory
 from . import serializers
 from django.core.mail import send_mail
 from django.conf import settings
@@ -24,6 +44,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from .models import Order, OrderItem
 from django.urls import reverse_lazy
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
 
 
 class index(ListView):
@@ -42,6 +64,10 @@ from django.shortcuts import render
 
 
 
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.views.generic import ListView
+from .models import Model_and_tochka, Category
+
 class catalog(ListView):
     model = Model_and_tochka
     template_name = 'Catalog/catalog.html'
@@ -49,8 +75,9 @@ class catalog(ListView):
     context_object_name = 'objects'
 
     def get_queryset(self):
+        # Фильтруем товары, которые есть на складе и существуют
         queryset = super().get_queryset()
-        queryset = queryset.filter(exist=True)
+        queryset = queryset.filter(exist=True, stock_quantity__gt=0)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -80,6 +107,7 @@ class catalog(ListView):
         context['page_links'] = page_links
 
         return context
+
 
 
 class FilteredCatalogView(ListView):
@@ -313,37 +341,28 @@ def filter_by_price(request):
 @require_POST
 def basket_add(request, product_id):
     basket = Basket(request)
-    prod_obj = get_object_or_404(Model_and_tochka, pk=product_id)
+    product = get_object_or_404(Model_and_tochka, pk=product_id)
     form = BasketAddProductForm(request.POST)
 
     if form.is_valid():
-        basket_info = form.cleaned_data
-
-        basket.add(product=prod_obj,
-                   count_product=basket_info['count_prod'],
-                   update_count=basket_info['update'])
-
+        cd = form.cleaned_data
+        basket.add(product=product, count_product=cd['count_prod'], update_count=cd['update'])
         return redirect('cart')
-
-
-def basket_remove(request, product_id):
-    basket = Basket(request)
-    prod_obj = get_object_or_404(Model_and_tochka, pk=product_id)
-
-    basket.remove(prod_obj)
-    return redirect('cart')
-
 
 def basket_info(request):
     basket = Basket(request)
     return render(request, 'Main/cart.html', {'basket': basket})
 
+def basket_remove(request, product_id):
+    basket = Basket(request)
+    product = get_object_or_404(Model_and_tochka, pk=product_id)
+    basket.remove(product)
+    return redirect('cart')
 
 def basket_clear(request):
     basket = Basket(request)
     basket.clear()
     return redirect('cart')
-
 
 @login_required
 @require_POST
@@ -351,34 +370,45 @@ def create_order(request):
     basket = Basket(request)
 
     if not basket or len(basket) == 0:
-        return redirect('cart')  # Если корзина пуста, перенаправляем обратно
-
-    print(f"Basket items: {[item for item in basket]}")  # Выводим содержимое корзины для отладки
+        print("Корзина пуста, заказ не может быть создан.")
+        return redirect('cart')
 
     # Создаем новый заказ
     order = Order.objects.create(
         user=request.user,
-        status='processing'  # Устанавливаем начальное значение для поля exist
+        status='processing'
     )
+    print("Создан новый заказ с ID:", order.id)
 
-    # Создаем элементы заказа
+    # Проходим по товарам в корзине
     for item in basket:
-        print(f"Processing item: {item}")  # Выводим каждый item для отладки
-        if 'product' in item and 'count_prod' in item:
-            OrderItem.objects.create(
-                order=order,
-                product=item['product'],
-                quantity=item['count_prod']
-            )
-        else:
-            print(f"Item does not have expected attributes: {item}")
+        product = item['product']
+        quantity = item['count_prod']
 
-    # Очищаем корзину после создания заказа
+        # Проверяем наличие товара
+        if product.stock_quantity < quantity:
+            print(f"Недостаточно товара '{product.name}' на складе. Запрошено: {quantity}, Доступно: {product.stock_quantity}")
+            return redirect('cart', {'error': f'Недостаточно товара {product.name} на складе.'})
+
+        # Уменьшаем количество на складе только один раз
+        print(f"Перед уменьшением: '{product.name}' на складе {product.stock_quantity}, требуется: {quantity}")
+        product.stock_quantity -= quantity
+        product.save()
+        print(f"После уменьшения: '{product.name}' на складе {product.stock_quantity}")
+
+        # Создаем элемент заказа с количеством
+        order_item = OrderItem.objects.create(
+            order=order,
+            product=product,
+            quantity=quantity
+        )
+        print(f"Добавлен товар '{product.name}' в заказ {order.id} в количестве {quantity}")
+
+    # Очищаем корзину
     basket.clear()
+    print("Корзина очищена после создания заказа.")
 
     return redirect('order_finish')
-
-
 
 class order(ListView):
     template_name = 'order/orders.html'
@@ -411,11 +441,28 @@ class createorder(CreateView):
                 order_items.save()
         # Redirect to the detail view after saving the order
         return redirect(reverse('detailorder', kwargs={'pk': self.object.pk}))
+
 class detailorder(DetailView):
     model = Order
     template_name = 'order/detailorder.html'
     context_object_name = 'order'
-#
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Получение и проверка всех позиций заказа
+        order_items = self.object.orderitem_set.all()
+        print(f"Отображение заказа с ID: {self.object.pk} для пользователя: {self.object.user.username}")
+        print(f"Всего позиций в заказе: {order_items.count()}")
+
+        for item in order_items:
+            print(f"Товар: {item.product.name}, Количество в заказе: {item.quantity}")
+
+        # Добавляем элементы заказа в контекст
+        context['order_items'] = order_items
+
+        return context
+
 class updateorder(UpdateView):
     model = Order
     form_class = OrderForm
@@ -427,17 +474,29 @@ class updateorder(UpdateView):
             data['order_items'] = OrderItemFormSet(self.request.POST, instance=self.object)
         else:
             data['order_items'] = OrderItemFormSet(instance=self.object)
-        data['products'] = Model_and_tochka.objects.all()  # Получение всех продуктов
+        data['products'] = Model_and_tochka.objects.all()
         return data
 
     def form_valid(self, form):
         context = self.get_context_data()
         order_items = context['order_items']
+
         with transaction.atomic():
             self.object = form.save()
+
             if order_items.is_valid():
+                # Удаляем элементы заказа, которых нет в форме, чтобы избежать дублирования
                 order_items.instance = self.object
+                existing_items = set(order_items.instance.orderitem_set.values_list('id', flat=True))
+                form_item_ids = set([item.instance.id for item in order_items if item.instance.id is not None])
+
+                # Удаляем элементы, не присутствующие в форме
+                to_delete = existing_items - form_item_ids
+                OrderItem.objects.filter(id__in=to_delete).delete()
+
+                # Сохраняем оставшиеся элементы заказа
                 order_items.save()
+
         return redirect(reverse_lazy('detailorder', kwargs={'pk': self.object.pk}))
 
 class deleteorder(DeleteView):
@@ -587,3 +646,218 @@ class ProfileDeleteView(LoginRequiredMixin, DeleteView):
 
 class ProfileDeletedView(TemplateView):
     template_name = 'Main/profile_deleted.html'
+
+
+
+# Проверка на суперпользователя
+@user_passes_test(lambda u: u.is_superuser)
+@login_required
+def admin_panel(request):
+    return render(request, 'AdminPanel/adminpanel.html')
+
+# Проверка на доступ только для суперпользователей
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+class AdminPanelOrderListView(LoginRequiredMixin, AdminRequiredMixin, ListView):
+    model = Order
+    template_name = 'AdminPanel/order_list.html'
+    context_object_name = 'orders'
+    paginate_by = 10  # Пагинация
+
+    def get_queryset(self):
+        return Order.objects.filter(exist=True).select_related('user')
+
+class AdminRequiredMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.is_superuser
+
+class AdminPanelOrderCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Order
+    form_class = OrderForm
+    template_name = 'AdminPanel/order_form.html'
+    success_url = reverse_lazy('adminpanel_order_list')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            data['order_items'] = OrderItemFormSet(self.request.POST)
+        else:
+            data['order_items'] = OrderItemFormSet()
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        order_items = context['order_items']
+        if form.is_valid() and order_items.is_valid():
+            with transaction.atomic():
+                self.object = form.save()
+                order_items.instance = self.object
+                order_items.save()
+            return super().form_valid(form)
+        else:
+            # Если есть ошибки, снова отобразим форму с сообщениями об ошибках
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class NewsListView(ListView):
+    model = News
+    template_name = 'Contact/news.html'
+    context_object_name = 'news_list'
+    paginate_by = 6
+
+class NewsDetailView(DetailView):
+    model = News
+    template_name = 'Contact/news_detail.html'
+    context_object_name = 'news'
+
+class WarehouseListView(UserPassesTestMixin, ListView):
+    model = Model_and_tochka
+    template_name = 'Main/warehouse.html'
+    context_object_name = 'products'
+
+    def test_func(self):
+        return self.request.user.is_staff
+
+    def get_queryset(self):
+        return Model_and_tochka.objects.filter(exist=True)
+
+    # Обработчик AJAX-запроса для обновления количества
+    def post(self, request, *args, **kwargs):
+        product_id = request.POST.get('product_id')
+        new_quantity = request.POST.get('new_quantity')
+
+        try:
+            product = Model_and_tochka.objects.get(id=product_id)
+            product.stock_quantity = new_quantity
+            product.save()
+            return JsonResponse({'success': True, 'new_quantity': product.stock_quantity})
+        except Model_and_tochka.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Product not found'})
+
+class EditStockView(UpdateView):
+    model = Model_and_tochka
+    fields = ['stock_quantity']
+    template_name = 'Main/edit_stock.html'
+    success_url = reverse_lazy('warehouse')
+
+    def form_valid(self, form):
+        form.save()
+        return redirect(self.success_url)
+
+class ActionHistoryView(ListView):
+    model = ActionHistory
+    template_name = 'Main/action_history.html'
+    context_object_name = 'actions'
+    paginate_by = 10  # Если нужно добавить пагинацию
+
+    def get_queryset(self):
+        return ActionHistory.objects.order_by('-timestamp')
+
+@login_required
+def action_history(request):
+    # Получаем историю действий, сортируем от новых к старым
+    records = ActionHistory.objects.all().order_by('-timestamp')
+    return render(request, 'Main/action_history.html', {'records': records})
+
+@login_required
+def delete_action_history(request, pk):
+    action_history = get_object_or_404(ActionHistory, pk=pk)
+    action_history.delete()
+    return redirect(reverse('action_history'))
+
+@login_required
+def clear_action_history(request):
+    ActionHistory.objects.all().delete()  # Удаляем все записи из таблицы
+    messages.success(request, "История действий успешно очищена.")
+    return redirect('action_history')  # Перенаправляем обратно на страницу истории
+
+@login_required
+def delete_product(request, pk):
+    product = get_object_or_404(Model_and_tochka, pk=pk)
+    product.delete()
+    messages.success(request, "Товар успешно удалён.")
+    return redirect('warehouse')
+
+# Проверка на доступ только для суперпользователей
+def admin_required(user):
+    return user.is_superuser
+
+@method_decorator(user_passes_test(admin_required), name='dispatch')
+class UserListView(ListView):
+    model = User
+    template_name = 'AdminPanel/user_list.html'
+    context_object_name = 'users'
+
+
+@method_decorator(user_passes_test(admin_required), name='dispatch')
+class UserCreateView(CreateView):
+    model = User
+    template_name = 'AdminPanel/user_form.html'
+    fields = ['username', 'email', 'is_staff', 'is_active']
+    success_url = reverse_lazy('user_list')
+
+@method_decorator(user_passes_test(admin_required), name='dispatch')
+class UserUpdateView(UpdateView):
+    model = User
+    template_name = 'AdminPanel/user_form.html'
+    fields = ['username', 'email', 'is_staff', 'is_active']
+    success_url = reverse_lazy('user_list')
+
+@user_passes_test(admin_required)
+def user_delete(request, pk):
+    user = get_object_or_404(User, pk=pk)
+    user.delete()
+    return redirect('user_list')
+
+@csrf_exempt
+def backup_db(request):
+    backup_file_path = os.path.join(settings.BASE_DIR, 'media', 'backups', 'db_backup.json')
+
+    # Если метод запроса GET, вернуть файл резервной копии для скачивания
+    if request.method == 'GET':
+        if os.path.exists(backup_file_path):
+            with open(backup_file_path, 'rb') as f:
+                response = HttpResponse(f.read(), content_type='application/json')
+                response['Content-Disposition'] = f'attachment; filename="db_backup.json"'
+                return response
+        else:
+            return JsonResponse({'success': False, 'message': 'Резервная копия не найдена.'})
+
+    # Если метод запроса POST, создать резервную копию базы данных
+    elif request.method == 'POST':
+        os.makedirs(os.path.dirname(backup_file_path), exist_ok=True)
+        try:
+            # Создаем резервную копию базы данных
+            subprocess.run(
+                ['python', 'manage.py', 'dumpdata', '--indent', '2', '-o', backup_file_path],
+                check=True
+            )
+            return JsonResponse({'success': True, 'message': 'Резервная копия успешно создана.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Ошибка при создании резервной копии: {str(e)}'})
+
+def restore_db(request):
+    if request.method == 'POST':
+        backup_file = request.FILES.get('backup_file')
+        if not backup_file:
+            return JsonResponse({'success': False, 'message': 'Файл для восстановления не выбран.'})
+
+        temp_path = os.path.join(settings.BASE_DIR, 'temp_backup.json')
+        try:
+            with open(temp_path, 'wb') as f:
+                for chunk in backup_file.chunks():
+                    f.write(chunk)
+            # Восстановление базы данных
+            subprocess.run(['python', 'manage.py', 'loaddata', temp_path], check=True)
+            os.remove(temp_path)
+            return JsonResponse({'success': True, 'message': 'Восстановление из резервной копии прошло успешно.'})
+        except Exception as e:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            return JsonResponse({'success': False, 'message': f'Ошибка при восстановлении из резервной копии: {e}'})
+

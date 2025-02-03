@@ -59,6 +59,108 @@
         </div>
     </div>
 </div>
+<div class="container my-5">
+    <h3 class="mb-4 text-dark">Часто задаваемые вопросы (FAQ)</h3>
+    <div class="faq">
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaqAnswer(this)">
+                Как долго длится доставка предзаказанных товаров?
+            </button>
+            <div class="faq-answer">
+                Доставка предзаказанных товаров обычно занимает от 2 до 4 недель в зависимости от их происхождения и места назначения.
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaqAnswer(this)">
+                Могу ли я отменить предзаказ?
+            </button>
+            <div class="faq-answer">
+                Да, вы можете отменить предзаказ, если товар еще не был отправлен. Свяжитесь с нашей поддержкой для получения подробной информации.
+            </div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question" onclick="toggleFaqAnswer(this)">
+                Какие способы оплаты вы принимаете?
+            </button>
+            <div class="faq-answer">
+                Мы принимаем основные кредитные карты, банковские переводы и электронные кошельки. В процессе оформления заказа вы сможете выбрать удобный способ оплаты.
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .faq {
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .faq-item {
+        border-bottom: 1px solid #ddd;
+        padding: 10px 0;
+    }
+
+    .faq-question {
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #333;
+        cursor: pointer;
+        padding: 10px 0;
+        position: relative;
+        outline: none; /* Убираем выделение рамкой */
+    }
+
+    .faq-question:focus {
+        outline: none; /* Убираем фокусное выделение для кнопок */
+    }
+
+    .faq-question:after {
+        content: '+';
+        position: absolute;
+        right: 0;
+        font-size: 1.5rem;
+        color: #333;
+    }
+
+    .faq-question.active:after {
+        content: '-';
+    }
+
+    .faq-answer {
+        display: none;
+        padding-top: 10px;
+        color: #555;
+    }
+
+    .faq-answer.open {
+        display: block;
+    }
+</style>
+
+<script>
+    function toggleFaqAnswer(button) {
+        const answer = button.nextElementSibling;
+        const isOpen = answer.classList.contains('open');
+        const allAnswers = document.querySelectorAll('.faq-answer');
+        const allQuestions = document.querySelectorAll('.faq-question');
+
+        // Закрываем все ответы и убираем класс active у всех вопросов
+        allAnswers.forEach(el => el.classList.remove('open'));
+        allQuestions.forEach(el => el.classList.remove('active'));
+
+        // Если текущий ответ не был открыт, открываем его
+        if (!isOpen) {
+            answer.classList.add('open');
+            button.classList.add('active');
+        }
+    }
+</script>
+
 
 <!-- Встроенные стили -->
 <style>

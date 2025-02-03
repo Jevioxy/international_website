@@ -1,7 +1,8 @@
 from django.apps import AppConfig
 
-
 class MainConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'Main'
-    verbose_name = 'Witch_Happines'
+
+    def ready(self):
+        import Main.signals  # Подключаем сигналы при запуске приложения

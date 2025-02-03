@@ -59,18 +59,35 @@ class BasketAddProductForm(forms.Form):
     count_prod = forms.TypedChoiceField(choices=PROD_MAX_COUNT, coerce=int, label='Количество')
     update = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
 
-class OrderForm(ModelForm):
+class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ['user', 'status']  # Поля для выбора пользователя и статуса заказа
+        error_messages = {
+            'user': {
+                'required': 'Выберите пользователя, оформившего заказ.',
+            },
+            'status': {
+                'required': 'Выберите статус заказа.',
+            },
+        }
 
-class OrderItemForm(ModelForm):
+class OrderItemForm(forms.ModelForm):
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity']
+        error_messages = {
+            'product': {
+                'required': 'Выберите товар для добавления в заказ.',
+            },
+            'quantity': {
+                'required': 'Укажите количество товара.',
+            },
+        }
 
-# Создание formset для OrderItem
-OrderItemFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=1)
+OrderItemFormSet = inlineformset_factory(
+    Order, OrderItem, form=OrderItemForm, extra=1, can_delete=True
+)
 
 
 class RegisterUserForm(UserCreationForm):
