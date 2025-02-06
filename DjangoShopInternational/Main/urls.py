@@ -72,6 +72,9 @@ urlpatterns = [
     # новости
     path('news/', NewsListView.as_view(), name='news_list'),
     path('news/<int:pk>/', NewsDetailView.as_view(), name='news_detail'),
+    path('news/create/', create_news, name='create_news'),
+    path('news/<int:pk>/edit/', edit_news, name='edit_news'),
+    path('news/<int:pk>/delete/', delete_news, name='delete_news'),
     # склад
     path('warehouse/', WarehouseListView.as_view(), name='warehouse'),
     path('warehouse/edit/<int:pk>/', EditStockView.as_view(), name='edit_stock'),
@@ -81,6 +84,9 @@ urlpatterns = [
     # админ панель заказов
     path('adminpanel/orders/', AdminPanelOrderListView.as_view(), name='adminpanel_order_list'),
     path('adminpanel/orders/create/', AdminPanelOrderCreateView.as_view(), name='adminpanel_order_create'),
+    path('adminpanel/orders/<int:pk>/edit-status/', AdminPanelOrderUpdateStatusView.as_view(), name='adminpanel_order_edit_status'),
+    path('adminpanel/orders/<int:pk>/edit-items/', AdminPanelOrderUpdateItemsView.as_view(), name='adminpanel_order_edit_items'),
+    path('adminpanel/orders/<int:pk>/delete/', AdminPanelOrderDeleteView.as_view(), name='adminpanel_order_delete'),
     # админ панель история действий пользователя
     path('action-history/', action_history, name='action_history'),
     path('action-history/delete/<int:pk>/', views.delete_action_history, name='delete_action_history'),
@@ -93,6 +99,11 @@ urlpatterns = [
     # админ панель копия бд и
     path('adminpanel/backup/', views.backup_db, name='backup_db'),
     path('adminpanel/restore/', views.restore_db, name='restore_db'),
+    # админ панель отзывы
+    path('adminpanel/reviews/', views.review_list, name='adminpanel_review_list'),
+    path('adminpanel/review/edit/<int:pk>/', views.review_edit, name='adminpanel_review_edit'),
+    path('adminpanel/review/delete/<int:pk>/', views.review_delete, name='adminpanel_review_delete'),
+    path('adminpanel/review/toggle_publish/<int:pk>/', views.review_toggle_publish, name='adminpanel_review_toggle_publish'),
 
 
 

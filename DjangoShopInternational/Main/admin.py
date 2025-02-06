@@ -43,11 +43,11 @@ class OrderAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'user', 'text', 'rating', 'creation_date']
+    list_display = ['pk', 'user', 'text', 'rating', 'creation_date', 'is_published']
     list_display_links = ['user', 'text']
-    list_editable = ['rating']
+    list_editable = ['rating', 'is_published']  # Добавляем возможность редактирования публикации
     search_fields = ('user__username', 'text')
-    list_filter = ('rating', 'creation_date')
+    list_filter = ('rating', 'creation_date', 'is_published')  # Добавляем фильтр по публикации
 
 class CountryOfOriginAdmin(admin.ModelAdmin):
     list_display = ['pk', 'name']

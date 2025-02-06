@@ -1,5 +1,3 @@
-<!-- templates/News/news_list.html -->
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -7,7 +5,14 @@
 
 {% block content %}
 <div class="container my-5">
+  {% if request.user.is_staff %}
+  <div class="d-flex justify-content-end mb-4">
+    <a href="{% url 'create_news' %}" class="btn btn-success">Добавить новость</a>
+  </div>
+  {% endif %}
+
   <h1 class="display-4 mb-4 text-center">Новости и объявления</h1>
+
   <div class="row">
     {% for news in news_list %}
     <div class="col-md-6 col-lg-4 mb-4">

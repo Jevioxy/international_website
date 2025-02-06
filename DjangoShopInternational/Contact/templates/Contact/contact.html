@@ -1,99 +1,143 @@
-{% extends  'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Контакты{% endblock %}
 
 {% block header %}
-    {%include 'inc/header.html' %}
+{% include 'inc/header.html' %}
 {% endblock %}
 
 {% block content %}
-   <div class="bg-light py-3">
-      <div class="container">
+<div class="bg-light py-3">
+    <div class="container">
         <div class="row">
-          <div class="col-md-12 mb-0">
-            <a href="{% url 'index' %}">Главная</a> <span class="mx-2 mb-0">/</span>
-            <strong class="text-black">Обратная связь</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="site-section">
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-md-12">
-            {% if success %}
-            <!-- Если сообщение отправлено, отображаем благодарность -->
-            <div class="text-center">
-              <h2 class="h3 mb-5 text-black">Спасибо за сообщение!</h2>
-              <h2 class="h3 mb-5 text-black">В ближайшем времени с вами свяжется специалист!</h2>
+            <div class="col-md-12 mb-0">
+                <a href="{% url 'index' %}">Главная</a> <span class="mx-2 mb-0">/</span>
+                <strong class="text-black">Обратная связь</strong>
             </div>
-            {% else %}
-            <!-- В противном случае показываем форму -->
-            <h2 class="h3 mb-5 text-black">Связаться</h2>
-            <form action="#" method="post">
+        </div>
+    </div>
+</div>
+
+<div class="site-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                {% if success %}
+                <!-- Если сообщение отправлено, отображаем благодарность -->
+                <div class="alert alert-success text-center">
+                    <h2 class="h3 mb-5 text-black">Спасибо за сообщение!</h2>
+                    <h2 class="h3 mb-5 text-black">В ближайшее время с вами свяжется специалист!</h2>
+                </div>
+                {% else %}
+                <!-- Форма обратной связи -->
+                <h2 class="h3 mb-5 text-black text-center">Связаться с нами</h2>
+                <form action="" method="post">
+                    {% csrf_token %}
+                    <div class="p-3 p-lg-5 border">
+                        <div class="form-group row">
+                            <div class="col-md-6">
+                                <label class="text-black">Имя <span class="text-danger">*</span></label>
+                                {{ form.name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-black">Фамилия <span class="text-danger">*</span></label>
+                                {{ form.surname }}
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label class="text-black">Адрес электронной почты <span class="text-danger">*</span></label>
+                                {{ form.email }}
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label class="text-black">Тема</label>
+                                {{ form.subject }}
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label class="text-black">Сообщение</label>
+                                {{ form.message }}
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-12">
+                                <button type="submit" name="contact_submit" class="btn btn-primary btn-lg btn-block">Отправить сообщение</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Блок "Оставить отзыв" -->
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h3 class="mb-4 text-dark text-center">Оставить отзыв</h3>
+
+            {% if review_success %}
+            <div class="alert alert-success text-center">
+                Ваш отзыв отправлен и будет опубликован после проверки модератором.
+            </div>
+            {% endif %}
+
+            {% if request.user.is_authenticated %}
+            <form action="" method="post">
                 {% csrf_token %}
                 <div class="p-3 p-lg-5 border">
                     <div class="form-group row">
-                        <div class="col-md-6">
-                            <label for="c_fname" class="text-black">Имя <span class="text-danger">*</span></label>
-                            {{ form.name }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="c_lname" class="text-black">Фамилия <span class="text-danger">*</span></label>
-                            {{ form.surname }}
+                        <div class="col-md-12">
+                            <label class="text-black">Ваш отзыв</label>
+                            {{ review_form.text }}
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-md-12">
-                            <label for="c_email" class="text-black">Адрес электронной почты <span class="text-danger">*</span></label>
-                            {{ form.email }}
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-md-12">
-                            <label for="c_subject" class="text-black">Тема</label>
-                            {{ form.subject }}
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <div class="col-md-12">
-                            <label for="c_message" class="text-black">Сообщение</label>
-                            {{ form.message }}
+                            <label class="text-black">Оценка</label>
+                            {{ review_form.rating }}
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-lg-12">
-                            <input type="submit" class="btn btn-primary btn-lg btn-block" value="Отправить сообщение">
+                            <button type="submit" name="review_submit" class="btn btn-primary btn-lg btn-block">Отправить отзыв</button>
                         </div>
                     </div>
                 </div>
             </form>
+            {% else %}
+            <p class="text-muted text-center">Чтобы оставить отзыв, <a href="{% url 'login' %}">войдите в аккаунт</a>.</p>
             {% endif %}
-          </div>
         </div>
-      </div>
     </div>
-
-<div class="container my-5">
-    <h3 class="mb-4 text-dark">Оставить отзыв</h3>
-    <form action="" method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="name" class="form-label">Ваше имя</label>
-            <input type="text" class="form-control" id="name" name="name" required>
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Ваш email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-            <label for="message" class="form-label">Ваш отзыв</label>
-            <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Отправить отзыв</button>
-    </form>
 </div>
+
+<style>
+    .p-lg-5 {
+        padding: 40px;
+    }
+    .border {
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        background: #fff;
+    }
+    .btn-lg {
+        font-size: 1.2rem;
+        padding: 10px;
+    }
+    .form-group label {
+        font-weight: bold;
+    }
+    .rating {
+        font-size: 1.2rem;
+        color: #ffcc00;
+    }
+</style>
 
 {% endblock %}

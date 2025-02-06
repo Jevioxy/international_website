@@ -1,20 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Редактировать заказ{% endblock %}
+{% block title %}Создать заказ{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-  <h2 class="mb-4">Редактировать заказ</h2>
+  <h2 class="mb-4">Создать заказ</h2>
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-
-    <!-- Ошибки для основной формы -->
-    {% if form.non_field_errors %}
-    <div class="alert alert-danger">
-      {{ form.non_field_errors }}
-    </div>
-    {% endif %}
 
     <h4 class="mt-4">Товары</h4>
     <div class="border p-3">
@@ -23,34 +16,21 @@
       <div class="form-row mb-3">
         <div class="col-md-8">
           {{ form.product.label_tag }} {{ form.product }}
-          {% if form.errors.product %}
-          <div class="text-danger">{{ form.errors.product }}</div>
-          {% endif %}
         </div>
         <div class="col-md-4">
           {{ form.quantity.label_tag }} {{ form.quantity }}
-          {% if form.errors.quantity %}
-          <div class="text-danger">{{ form.errors.quantity }}</div>
-          {% endif %}
         </div>
-        {% if form.instance.pk %}
-        <div class="col-md-2">
-          <label for="DELETE">Удалить</label>
-          {{ form.DELETE }}
-        </div>
-        {% endif %}
       </div>
       {% endfor %}
       <button type="button" class="btn btn-secondary add-item">Добавить товар</button>
     </div>
 
-    <button type="submit" class="btn btn-success mt-4">Сохранить изменения</button>
+    <button type="submit" class="btn btn-success mt-4">Создать заказ</button>
     <a href="{% url 'adminpanel_order_list' %}" class="btn btn-secondary mt-4">Отмена</a>
   </form>
 </div>
 
 <script>
-  // JavaScript для добавления нового товара в заказ
   document.querySelector('.add-item').addEventListener('click', function() {
     const formsetTotal = document.querySelectorAll('[id$="-TOTAL_FORMS"]')[0];
     const newFormIndex = parseInt(formsetTotal.value);

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}Удаление отзыва{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="text-center mb-4">Удаление отзыва</h2>
+  <p class="text-center">Вы уверены, что хотите удалить этот отзыв от пользователя "{{ review.user.username }}"?</p>
+  <form method="post" class="text-center">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Удалить</button>
+    <a href="{% url 'adminpanel_review_list' %}" class="btn btn-secondary">Отмена</a>
+  </form>
+</div>
+{% endblock %}

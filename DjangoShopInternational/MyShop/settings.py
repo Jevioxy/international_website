@@ -2,7 +2,13 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 📂 Папка для резервных копий
+BACKUP_DIR = BASE_DIR / 'backups'
+BACKUP_DIR.mkdir(parents=True, exist_ok=True)  # Создаём папку, если её нет
+
 
 
 # Quick-start development settings - unsuitable for production

@@ -5,7 +5,8 @@ from django.forms import ModelForm, TextInput, Textarea, inlineformset_factory
 from django import forms
 from django.contrib.auth.models import User
 from .models import Order
-
+from .models import News
+from .models import Review
 
 class Model_and_tochkaForm(ModelForm):
 
@@ -59,17 +60,17 @@ class BasketAddProductForm(forms.Form):
     count_prod = forms.TypedChoiceField(choices=PROD_MAX_COUNT, coerce=int, label='Количество')
     update = forms.BooleanField(required=False, initial=False, widget=forms.HiddenInput)
 
+from django import forms
+from django.forms import inlineformset_factory
+from .models import Order, OrderItem
+
 class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ['user', 'status']  # Поля для выбора пользователя и статуса заказа
+        fields = ['user', 'status']
         error_messages = {
-            'user': {
-                'required': 'Выберите пользователя, оформившего заказ.',
-            },
-            'status': {
-                'required': 'Выберите статус заказа.',
-            },
+            'user': {'required': 'Выберите пользователя.'},
+            'status': {'required': 'Выберите статус заказа.'},
         }
 
 class OrderItemForm(forms.ModelForm):
@@ -77,17 +78,14 @@ class OrderItemForm(forms.ModelForm):
         model = OrderItem
         fields = ['product', 'quantity']
         error_messages = {
-            'product': {
-                'required': 'Выберите товар для добавления в заказ.',
-            },
-            'quantity': {
-                'required': 'Укажите количество товара.',
-            },
+            'product': {'required': 'Выберите товар.'},
+            'quantity': {'required': 'Укажите количество.'},
         }
 
 OrderItemFormSet = inlineformset_factory(
     Order, OrderItem, form=OrderItemForm, extra=1, can_delete=True
 )
+
 
 
 class RegisterUserForm(UserCreationForm):
@@ -150,3 +148,25 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['profile_picture', 'first_name', 'last_name', 'email']
+
+class NewsForm(forms.ModelForm):
+    class Meta:
+        model = News
+        fields = ['title', 'description', 'photo']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите заголовок'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Введите описание'}),
+            'photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+
+
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['text', 'rating']
+        widgets = {
+            'text': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Напишите ваш отзыв...'}),
+            'rating': forms.Select(choices=[(1, '★☆☆☆☆'), (2, '★★☆☆☆'), (3, '★★★☆☆'), (4, '★★★★☆'), (5, '★★★★★')], attrs={'class': 'form-control'}),
+        }

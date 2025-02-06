@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать статус заказа №{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Редактировать статус заказа №{{ order.id }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <fieldset class="border p-3 mb-4">
+      <legend class="w-auto">Основная информация</legend>
+      {{ form.as_p }}
+    </fieldset>
+
+    <button type="submit" class="btn btn-success mt-4">Сохранить изменения</button>
+    <a href="{% url 'adminpanel_order_list' %}" class="btn btn-secondary mt-4">Отмена</a>
+  </form>
+</div>
+{% endblock %}

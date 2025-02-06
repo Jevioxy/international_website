@@ -37,11 +37,12 @@
         </div>
     </div>
 </div>
+<!-- Как происходит предзаказ -->
 <div class="container my-5">
     <div class="row">
         <div class="col-md-12">
             <h3 class="mb-4 text-dark">Как происходит предзаказ</h3>
-            <div class="card">
+            <div class="card order-process">
                 <div class="card-body">
                     <h5 class="card-title">1. Зарегистрируйтесь или войдите в аккаунт</h5>
                     <p class="card-text">Для доступа к корзине и возможности оформления заказа необходимо зарегистрироваться или войти в свой аккаунт. Если у вас еще нет учетной записи, вы можете создать ее на странице регистрации.</p>
@@ -88,6 +89,90 @@
         </div>
     </div>
 </div>
+<div class="container my-5">
+    <h3 class="mb-4 text-dark text-center">Отзывы наших клиентов</h3>
+
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">{{ review.user.username }}</h5>
+
+                    <!-- Отображение звезд -->
+                    <div class="rating mb-2">
+                        {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= review.rating %}
+                        <span class="star filled">★</span>
+                        {% else %}
+                        <span class="star">☆</span>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <p class="card-text">{{ review.text }}</p>
+                    <p class="text-muted"><small>Дата: {{ review.creation_date }}</small></p>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted w-100">Пока нет отзывов. Будьте первым!</p>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    /* Стили для блока "Как происходит предзаказ" */
+    .order-process {
+        background: #fff;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Стили для отзывов */
+    .review-card {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: 0.3s;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .review-card:hover {
+        transform: scale(1.05);
+    }
+
+    .rating .star {
+        font-size: 1.2rem;
+        color: #ccc;
+    }
+
+    .rating .filled {
+        color: #FFD700;
+    }
+</style>
+
+<style>
+    .rating .star {
+        font-size: 1.2rem;
+        color: #ccc;
+    }
+    .rating .filled {
+        color: #FFD700;
+    }
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+    .card:hover {
+        transform: scale(1.05);
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .card-body {
+        text-align: center;
+    }
+</style>
 
 
 <style>

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать товары в заказе №{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Редактировать товары в заказе №{{ order.id }}</h2>
+
+  <form method="post">
+    {% csrf_token %}
+
+    {{ order_items.management_form }}
+
+    <div class="order-items">
+      {% for form in order_items %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <label>{{ form.product.label_tag }}</label>
+              {{ form.product }}
+            </div>
+            <div class="col-md-4">
+              <label>{{ form.quantity.label_tag }}</label>
+              {{ form.quantity }}
+            </div>
+            <div class="col-md-2">
+              <label>Удалить</label>
+              {{ form.DELETE }}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn btn-success mt-4">Сохранить изменения</button>
+    <a href="{% url 'adminpanel_order_list' %}" class="btn btn-secondary mt-4">Отмена</a>
+  </form>
+</div>
+{% endblock %}

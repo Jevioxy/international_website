@@ -13,28 +13,12 @@
                     Заказы
                     <span class="text-primary">+</span>
                 </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    Категории
-                    <span class="text-primary">+</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                <a href="{% url 'adminpanel_review_list' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                     Отзывы
-                    <span class="text-primary">+</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    Теги
-                    <span class="text-primary">+</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    Товары
                     <span class="text-primary">+</span>
                 </a>
                 <a href="{% url 'user_list' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                     Пользователи
-                    <span class="text-primary">+</span>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    Группы
                     <span class="text-primary">+</span>
                 </a>
                 <a href="{% url 'action_history' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
@@ -48,10 +32,10 @@
         <div class="col-md-9">
             <h1 class="display-4 mb-4 text-dark text-left">Административная панель</h1>
             <p class="lead text-dark text-left">
-                Добро пожаловать в административную панель! Здесь вы можете управлять различными аспектами сайта, такими как заказы, категории товаров, отзывы, теги и многое другое.
+                Добро пожаловать в административную панель! Здесь вы можете управлять заказами, отзывами, пользователями и историей действий.
             </p>
             <p class="text-dark text-left">
-                Используйте меню слева для перехода к нужному разделу. Каждая категория позволяет выполнять основные операции, такие как добавление, редактирование и удаление записей. Административная панель создана для упрощения управления контентом и эффективного обслуживания пользователей.
+                Используйте меню слева для перехода к нужному разделу. В каждом разделе вы можете добавлять, редактировать или удалять данные.
             </p>
 
             <!-- Блок для кнопок резервного копирования и восстановления -->

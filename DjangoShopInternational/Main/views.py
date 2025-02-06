@@ -1,6 +1,9 @@
 from django.contrib.auth import logout
 import subprocess
 import os
+from django.contrib.auth.decorators import user_passes_test
+from .forms import NewsForm
+from .models import News
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 import subprocess
@@ -48,16 +51,24 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render
 
 
+from django.views.generic import ListView
+from .models import Model_and_tochka, Review
+
 class index(ListView):
     model = Model_and_tochka
     template_name = 'Main/index.html'
     context_object_name = 'objects'
 
     def get_queryset(self):
-        # Фильтрация только существующих товаров
         queryset = super().get_queryset()
-        queryset = queryset.filter(exist=True)
+        queryset = queryset.filter(exist=True, stock_quantity__gt=0)  # Фильтрация по наличию
         return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['reviews'] = Review.objects.filter(is_published=True)[:6]  # Показываем 6 последних отзывов
+        return context
+
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render
@@ -154,35 +165,57 @@ class FilteredCatalogView(ListView):
 
 
 
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from .forms import ReviewForm, ContactForm
+
 def contact(request):
     context = {}
+    form = ContactForm()
+    review_form = ReviewForm()
+
     if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():
-            send_message(form.cleaned_data['name'], form.cleaned_data['surname'], form.cleaned_data['subject'], form.cleaned_data['email'], form.cleaned_data['message'])
-            context = {'success': True}
-        else:
-            context['form'] = form
-    else:
-        form = ContactForm()
-        context['form'] = form
+        # Если отправлена форма обратной связи
+        if 'contact_submit' in request.POST:
+            form = ContactForm(request.POST)
+            if form.is_valid():
+                send_message(
+                    form.cleaned_data['name'],
+                    form.cleaned_data['surname'],
+                    form.cleaned_data['subject'],
+                    form.cleaned_data['email'],
+                    form.cleaned_data['message']
+                )
+                return redirect('contact')  # Очищаем форму после отправки
+
+        # Если отправлена форма отзыва
+        elif 'review_submit' in request.POST:
+            review_form = ReviewForm(request.POST)
+            if review_form.is_valid():
+                review = review_form.save(commit=False)
+                review.user = request.user  # Привязываем отзыв к текущему пользователю
+                review.save()
+                return redirect('contact')  # Перенаправление, чтобы очистить форму
+
+    context['form'] = form
+    context['review_form'] = review_form
+    context['reviews'] = Review.objects.filter(is_published=True)  # Показываем только опубликованные отзывы
     return render(request, 'Contact/contact.html', context=context)
 
-
-
 def send_message(name, surname, subject, email, message):
-    # Формируем тему и тело письма
     subject = f"WITCH HAPPINES - Новое сообщение: {subject}"
     message_body = f"Имя: {name}\nФамилия: {surname}\nE-mail: {email}\n\nСообщение:\n{message}"
 
-    # Отправляем письмо
     send_mail(
-        subject,  # Тема письма
-        message_body,  # Текст письма
+        subject,
+        message_body,
         settings.DEFAULT_FROM_EMAIL,
-        ['t50_n.a.berlikov@mpt.ru'],  # Кому (замените на ваш email)
-        fail_silently=False,  # Если ошибка, то она будет выброшена
+        ['t50_n.a.berlikov@mpt.ru'],  # Замени на свою почту
+        fail_silently=False,
     )
+
 
 class login(LoginView):
     form_class = LoginUserForm
@@ -612,8 +645,13 @@ class ApiOrderItemDelete(generics.RetrieveDestroyAPIView):
 def order_finish(request):
     return render(request, 'Main/orderfinish.html')
 
+
+from .models import Review
+
 def about_us(request):
-    return render(request, 'Main/about_us.html')
+    reviews = Review.objects.filter(is_published=True)  # Показываем только одобренные отзывы
+    return render(request, 'Main/about_us.html', {'reviews': reviews})
+
 
 def example(request):
     return render(request, 'Main/a.html')
@@ -676,13 +714,16 @@ class AdminRequiredMixin(UserPassesTestMixin):
 class AdminPanelOrderCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Order
     form_class = OrderForm
-    template_name = 'AdminPanel/order_form.html'
+    template_name = 'AdminPanel/order_create.html'
     success_url = reverse_lazy('adminpanel_order_list')
 
     def test_func(self):
         return self.request.user.is_superuser
 
     def get_context_data(self, **kwargs):
+        """
+        Передаём в контекст форму для позиций товаров
+        """
         data = super().get_context_data(**kwargs)
         if self.request.POST:
             data['order_items'] = OrderItemFormSet(self.request.POST)
@@ -691,6 +732,9 @@ class AdminPanelOrderCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateV
         return data
 
     def form_valid(self, form):
+        """
+        Обрабатываем форму и сохраняем связанные элементы заказа
+        """
         context = self.get_context_data()
         order_items = context['order_items']
         if form.is_valid() and order_items.is_valid():
@@ -699,9 +743,100 @@ class AdminPanelOrderCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateV
                 order_items.instance = self.object
                 order_items.save()
             return super().form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+
+from django.views.generic import UpdateView
+from django.shortcuts import redirect, render
+from django.db import transaction
+from django.urls import reverse_lazy
+from django.contrib import messages
+from django.forms import inlineformset_factory
+from .models import Order, OrderItem, Model_and_tochka
+from .forms import OrderForm, OrderItemForm
+
+from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import UpdateView
+from django.db import transaction
+from django.urls import reverse_lazy
+from .models import Order, OrderItem
+from .forms import OrderForm, OrderItemFormSet
+
+
+from django.shortcuts import redirect
+from django.views.generic import UpdateView
+from django.urls import reverse_lazy
+from .models import Order
+from .forms import OrderForm
+
+class AdminPanelOrderUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Order
+    form_class = OrderForm  # Оставляем только форму заказа без товаров
+    template_name = 'AdminPanel/order_edit_status.html'
+    success_url = reverse_lazy('adminpanel_order_list')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def form_valid(self, form):
+        """
+        Обновляем только статус заказа.
+        """
+        self.object = form.save()
+        return redirect(self.success_url)
+
+from django.shortcuts import redirect
+from django.views.generic.edit import UpdateView
+from django.forms import inlineformset_factory
+from django.db import transaction
+from .models import Order, OrderItem
+from .forms import OrderItemForm
+
+OrderItemFormSet = inlineformset_factory(Order, OrderItem, form=OrderItemForm, extra=1, can_delete=True)
+
+class AdminPanelOrderUpdateItemsView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Order
+    template_name = 'AdminPanel/order_edit_items.html'
+    fields = []  # Здесь не нужно указывать поля, так как мы работаем только с OrderItem
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def get_context_data(self, **kwargs):
+        """
+        Передаём в контекст форму для позиций товаров
+        """
+        data = super().get_context_data(**kwargs)
+        if self.request.POST:
+            data['order_items'] = OrderItemFormSet(self.request.POST, instance=self.object)
         else:
-            # Если есть ошибки, снова отобразим форму с сообщениями об ошибках
-            return self.render_to_response(self.get_context_data(form=form))
+            data['order_items'] = OrderItemFormSet(instance=self.object)
+        return data
+
+    def form_valid(self, form):
+        """
+        Сохраняем изменения в товарах заказа
+        """
+        context = self.get_context_data()
+        order_items = context['order_items']
+        if order_items.is_valid():
+            with transaction.atomic():
+                order_items.instance = self.object
+                order_items.save()
+            return redirect('adminpanel_order_list')
+        return self.render_to_response(self.get_context_data(form=form))
+
+
+
+class AdminPanelOrderDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Order
+    template_name = 'AdminPanel/order_confirm_delete.html'
+    success_url = reverse_lazy('adminpanel_order_list')
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
 
 
 class NewsListView(ListView):
@@ -814,50 +949,313 @@ def user_delete(request, pk):
     user.delete()
     return redirect('user_list')
 
+
+import json
+import subprocess
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from io import BytesIO
+from django.core.serializers import serialize
+from django.apps import apps
+
 @csrf_exempt
 def backup_db(request):
-    backup_file_path = os.path.join(settings.BASE_DIR, 'media', 'backups', 'db_backup.json')
+    """
+    Создание резервной копии базы данных и скачивание без сохранения на сервере.
+    """
+    try:
+        # Выбираем модели, которые нужно сохранить
+        models_to_backup = ["Main.Category", "Main.CountryOfOrigin", "Main.Model_and_tochka",
+                            "Main.Order", "Main.OrderItem", "Main.Review", "Main.News", "Main.ActionHistory"]
 
-    # Если метод запроса GET, вернуть файл резервной копии для скачивания
-    if request.method == 'GET':
-        if os.path.exists(backup_file_path):
-            with open(backup_file_path, 'rb') as f:
-                response = HttpResponse(f.read(), content_type='application/json')
-                response['Content-Disposition'] = f'attachment; filename="db_backup.json"'
-                return response
-        else:
-            return JsonResponse({'success': False, 'message': 'Резервная копия не найдена.'})
+        # Создаём резервную копию в памяти (без сохранения на сервере)
+        backup_data = []
+        for model_name in models_to_backup:
+            model = apps.get_model(model_name)
+            serialized_data = json.loads(serialize("json", model.objects.all()))
 
-    # Если метод запроса POST, создать резервную копию базы данных
-    elif request.method == 'POST':
-        os.makedirs(os.path.dirname(backup_file_path), exist_ok=True)
-        try:
-            # Создаем резервную копию базы данных
-            subprocess.run(
-                ['python', 'manage.py', 'dumpdata', '--indent', '2', '-o', backup_file_path],
-                check=True
-            )
-            return JsonResponse({'success': True, 'message': 'Резервная копия успешно создана.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': f'Ошибка при создании резервной копии: {str(e)}'})
+            # Преобразуем внешние ключи в объекты
+            for obj in serialized_data:
+                fields = obj["fields"]
 
+                # Меняем category и country_of_origin
+                if "category" in fields and fields["category"]:
+                    category = Category.objects.filter(pk=fields["category"]).first()
+                    if category:
+                        fields["category"] = {"pk": category.pk, "name": category.name, "description": category.description}
+
+                if "country_of_origin" in fields and fields["country_of_origin"]:
+                    country = CountryOfOrigin.objects.filter(pk=fields["country_of_origin"]).first()
+                    if country:
+                        fields["country_of_origin"] = {"pk": country.pk, "name": country.name}
+
+            backup_data.extend(serialized_data)
+
+        # Записываем в файл (для скачивания)
+        json_output = json.dumps(backup_data, ensure_ascii=False, indent=2)
+        response = HttpResponse(json_output, content_type="application/json")
+        response["Content-Disposition"] = 'attachment; filename="db_backup.json"'
+
+        return response
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Ошибка при создании резервной копии: {e}'})
+
+
+import json
+import io
+import subprocess
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from .models import Category, CountryOfOrigin, Model_and_tochka, Order, OrderItem, Review, News, ActionHistory
+from django.db import transaction, IntegrityError
+
+@csrf_exempt
+def backup_db(request):
+    """
+    Создание резервной копии и отправка пользователю без сохранения на сервере.
+    """
+    try:
+        output = subprocess.run(
+            ['python', 'manage.py', 'dumpdata', '--indent', '2'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        response = HttpResponse(output.stdout, content_type='application/json')
+        response['Content-Disposition'] = 'attachment; filename="db_backup.json"'
+        return response
+    except subprocess.CalledProcessError as e:
+        return JsonResponse({'success': False, 'message': f'Ошибка при создании резервной копии: {e}'})
+
+import json
+from django.db import transaction, connection
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.models import User
+from .models import (
+    Model_and_tochka, Order, OrderItem, Review, News,
+    ActionHistory, Category, CountryOfOrigin
+)
+
+
+@csrf_exempt
 def restore_db(request):
+    """
+    Восстановление базы данных из загруженной резервной копии.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Неверный метод запроса'})
+
+    backup_file = request.FILES.get('backup_file')
+    if not backup_file:
+        return JsonResponse({'success': False, 'message': 'Файл для восстановления не выбран.'})
+
+    try:
+        # Загружаем JSON из загруженного файла
+        data = json.load(backup_file)
+
+        print("⚠️ НАЧИНАЕМ ВОССТАНОВЛЕНИЕ...\n")
+
+        with transaction.atomic():
+            # Очистка таблиц, кроме пользователей
+            print(f"📊 Перед очисткой: {Model_and_tochka.objects.count()} товаров, {Category.objects.count()} категорий")
+
+            Model_and_tochka.objects.all().delete()
+            Order.objects.all().delete()
+            OrderItem.objects.all().delete()
+            Review.objects.all().delete()
+            News.objects.all().delete()
+            ActionHistory.objects.all().delete()
+            Category.objects.all().delete()
+            CountryOfOrigin.objects.all().delete()
+
+            print(f"✅ Очистка завершена. Товаров: {Model_and_tochka.objects.count()}, Категорий: {Category.objects.count()}\n")
+
+            # Восстанавливаем пользователей ПЕРВЫМИ
+            users = []
+            user_groups = {}  # Храним группы
+            user_permissions = {}  # Храним права доступа
+
+            for item in data:
+                if item["model"] == "auth.user":
+                    user_data = item["fields"]
+                    groups = user_data.pop("groups", [])  # Извлекаем группы
+                    permissions = user_data.pop("user_permissions", [])  # Извлекаем права
+
+                    user, _ = User.objects.update_or_create(id=item["pk"], defaults=user_data)
+                    user_groups[user.id] = groups
+                    user_permissions[user.id] = permissions
+
+            # Присваиваем группы и права пользователям
+            for user_id, groups in user_groups.items():
+                user = User.objects.filter(id=user_id).first()
+                if user:
+                    user.groups.set(groups)
+
+            for user_id, permissions in user_permissions.items():
+                user = User.objects.filter(id=user_id).first()
+                if user:
+                    user.user_permissions.set(permissions)
+
+            print(f"✅ Восстановлено пользователей: {len(users)}\n")
+
+            # Восстанавливаем категории и страны
+            categories = []
+            countries = []
+            objects_to_create = []
+
+            for item in data:
+                model_name = item["model"]
+                fields = item["fields"]
+
+                if model_name == "Main.category":
+                    category, _ = Category.objects.update_or_create(id=item["pk"], defaults=fields)
+                    categories.append(category)
+                elif model_name == "Main.countryoforigin":
+                    country, _ = CountryOfOrigin.objects.update_or_create(id=item["pk"], defaults=fields)
+                    countries.append(country)
+                else:
+                    objects_to_create.append(item)
+
+            print(f"✅ Восстановлено категорий: {len(categories)}, стран: {len(countries)}\n")
+
+            # Восстанавливаем остальные данные
+            for item in objects_to_create:
+                model_name = item["model"]
+                fields = item["fields"]
+
+                if model_name == "Main.model_and_tochka":
+                    fields["category"] = Category.objects.get(id=fields["category"]) if fields["category"] else None
+                    fields["country_of_origin"] = CountryOfOrigin.objects.get(id=fields["country_of_origin"]) if fields["country_of_origin"] else None
+                    Model_and_tochka.objects.update_or_create(id=item["pk"], defaults=fields)
+
+                elif model_name == "Main.order":
+                    fields["user"] = User.objects.filter(id=fields["user"]).first()
+                    Order.objects.update_or_create(id=item["pk"], defaults=fields)
+
+                elif model_name == "Main.orderitem":
+                    fields["order"] = Order.objects.get(id=fields["order"])
+                    fields["product"] = Model_and_tochka.objects.get(id=fields["product"])
+                    OrderItem.objects.update_or_create(id=item["pk"], defaults=fields)
+
+                elif model_name == "Main.review":
+                    fields["user"] = User.objects.filter(id=fields["user"]).first()
+                    Review.objects.update_or_create(id=item["pk"], defaults=fields)
+
+                elif model_name == "Main.news":
+                    News.objects.update_or_create(id=item["pk"], defaults=fields)
+
+                elif model_name == "Main.actionhistory":
+                    fields["user"] = User.objects.filter(id=fields["user"]).first()
+                    ActionHistory.objects.update_or_create(id=item["pk"], defaults=fields)
+
+            print(f"✅ Восстановлено товаров: {Model_and_tochka.objects.count()}, заказов: {Order.objects.count()}\n")
+
+            # Сбрасываем автоинкремент для всех таблиц
+            reset_auto_increment()
+
+        return JsonResponse({'success': True, 'message': 'Восстановление из резервной копии прошло успешно.'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Ошибка при восстановлении: {e}'})
+
+
+def reset_auto_increment():
+    """
+    Автоматический сброс автоинкремента для всех таблиц после восстановления.
+    """
+    tables = [
+        "Main_model_and_tochka",
+        "Main_order",
+        "Main_review",
+        "Main_actionhistory",
+        "Main_category",
+        "Main_countryoforigin",
+        "Main_orderitem",
+        "Main_news"
+    ]
+
+    with connection.cursor() as cursor:
+        for table in tables:
+            cursor.execute(f"SELECT setval(pg_get_serial_sequence('\"{table}\"', 'id'), (SELECT MAX(id) FROM \"{table}\")+1);")
+            print(f"✅ Автоинкремент сброшен для {table}")
+
+
+
+def create_news(request):
+    if request.method == "POST":
+        form = NewsForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('news_list')  # Перенаправление на страницу списка новостей
+    else:
+        form = NewsForm()
+
+    return render(request, 'Contact/news_create.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_staff)  # Ограничиваем доступ только для staff
+def edit_news(request, pk):
+    news = get_object_or_404(News, pk=pk)
+
+    if request.method == "POST":
+        form = NewsForm(request.POST, request.FILES, instance=news)
+        if form.is_valid():
+            form.save()
+            return redirect('news_detail', pk=news.pk)  # Перенаправление на просмотр новости
+    else:
+        form = NewsForm(instance=news)
+
+    return render(request, 'Contact/news_edit.html', {'form': form, 'news': news})
+
+@user_passes_test(lambda u: u.is_staff)  # Доступ только для staff
+def delete_news(request, pk):
+    news = get_object_or_404(News, pk=pk)
+    news.delete()
+    return redirect('news_list')  # Перенаправление на список новостей после удаления
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Review
+from .forms import ReviewForm
+
+# Проверка, является ли пользователь администратором
+def admin_required(user):
+    return user.is_staff
+
+@login_required
+@user_passes_test(admin_required)
+def review_list(request):
+    reviews = Review.objects.all()
+    return render(request, 'Adminpanel/review_list.html', {'reviews': reviews})
+
+@login_required
+@user_passes_test(admin_required)
+def review_edit(request, pk):
+    review = get_object_or_404(Review, pk=pk)
     if request.method == 'POST':
-        backup_file = request.FILES.get('backup_file')
-        if not backup_file:
-            return JsonResponse({'success': False, 'message': 'Файл для восстановления не выбран.'})
+        form = ReviewForm(request.POST, instance=review)
+        if form.is_valid():
+            form.save()
+            return redirect('adminpanel_review_list')
+    else:
+        form = ReviewForm(instance=review)
+    return render(request, 'Adminpanel/review_edit.html', {'form': form, 'review': review})
 
-        temp_path = os.path.join(settings.BASE_DIR, 'temp_backup.json')
-        try:
-            with open(temp_path, 'wb') as f:
-                for chunk in backup_file.chunks():
-                    f.write(chunk)
-            # Восстановление базы данных
-            subprocess.run(['python', 'manage.py', 'loaddata', temp_path], check=True)
-            os.remove(temp_path)
-            return JsonResponse({'success': True, 'message': 'Восстановление из резервной копии прошло успешно.'})
-        except Exception as e:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-            return JsonResponse({'success': False, 'message': f'Ошибка при восстановлении из резервной копии: {e}'})
+@login_required
+@user_passes_test(admin_required)
+def review_delete(request, pk):
+    review = get_object_or_404(Review, pk=pk)
+    if request.method == 'POST':
+        review.delete()
+        return redirect('adminpanel_review_list')
+    return render(request, 'Adminpanel/review_confirm_delete.html', {'review': review})
 
+@login_required
+@user_passes_test(admin_required)
+def review_toggle_publish(request, pk):
+    review = get_object_or_404(Review, pk=pk)
+    review.is_published = not review.is_published
+    review.save()
+    return redirect('adminpanel_review_list')

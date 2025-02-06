@@ -119,27 +119,32 @@ class OrderItem(models.Model):
 
 
 
+from django.db import models
+from django.contrib.auth.models import User
+
 class Review(models.Model):
     RATING_CHOICES = [
-        (1, '1 - Очень плохо'),
-        (2, '2 - Плохо'),
-        (3, '3 - Нормально'),
-        (4, '4 - Хорошо'),
-        (5, '5 - Отлично'),
+        (1, '★☆☆☆☆'),
+        (2, '★★☆☆☆'),
+        (3, '★★★☆☆'),
+        (4, '★★★★☆'),
+        (5, '★★★★★'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
     text = models.TextField(verbose_name='Текст отзыва')
     rating = models.IntegerField(choices=RATING_CHOICES, verbose_name='Рейтинг', default=5)
     creation_date = models.DateField(auto_now_add=True, verbose_name='Дата создания')
+    is_published = models.BooleanField(default=False, verbose_name="Опубликован")
 
     def __str__(self):
         return f'Отзыв от {self.user.username}'
 
     class Meta:
-        verbose_name = 'отзыв'
+        verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         ordering = ['-creation_date']
+
 
 
 class News(models.Model):

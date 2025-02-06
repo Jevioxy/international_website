@@ -27,9 +27,6 @@
               <li><a href="{% url 'about_us' %}" style="color: white !important;">О нас</a></li>
               <li><a href="{% url 'contact' %}" style="color: white !important;">Обратная связь</a></li>
               <li><a href="{% url 'news_list' %}" style="color: white !important;">Новости</a></li>
-              {% if user.is_staff %}
-              <li><a href="{% url 'order' %}" style="color: white !important;">Заказ</a></li>
-              {% endif %}
             </ul>
           </nav>
         </div>
